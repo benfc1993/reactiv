@@ -36,7 +36,10 @@ export default {
       inject({
         jsxPragma: path.resolve(__dirname, "src/jsx.ts"),
       }),
-      serve(),
+      serve({
+        contentBase: "dist",
+        open: true,
+      }),
       livereload(),
     ],
   ],
