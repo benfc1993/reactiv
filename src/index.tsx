@@ -5,7 +5,6 @@ import { CreateDOM } from "./CreateDOM";
 CreateDOM("root", (): Node => {
   return (
     <div className="root">
-      {" "}
       {/* - 9 | L0 C1 */}
       <div className="p-1">
         {" "}

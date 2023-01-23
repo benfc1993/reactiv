@@ -1,6 +1,8 @@
 import typescript from "@rollup/plugin-typescript";
 import jsx from "rollup-plugin-jsx";
 import inject from "@rollup/plugin-inject";
+import serve from "rollup-plugin-serve";
+import livereload from "rollup-plugin-livereload";
 import path from "path";
 
 export default {
@@ -34,6 +36,8 @@ export default {
       inject({
         jsxPragma: path.resolve(__dirname, "src/jsx.ts"),
       }),
+      serve(),
+      livereload(),
     ],
   ],
   sourceMap: true,
