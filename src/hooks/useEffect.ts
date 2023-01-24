@@ -2,7 +2,7 @@ import { globals } from '../globals/globals';
 
 export const useEffect = (
   callback: () => void | (() => void),
-  dependencies: unknown[]
+  dependencies?: unknown[]
 ) => {
   const componentId = globals.currentId;
   const stateIndex = globals.currentStateIndex;
@@ -15,6 +15,7 @@ export const useEffect = (
   }
 
   if (
+    dependencies === undefined ||
     cache[stateIndex].dependencies === undefined ||
     (cache[stateIndex].dependencies as []).some(
       (dep, idx) => dep != dependencies[idx]

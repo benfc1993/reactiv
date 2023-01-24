@@ -1,9 +1,11 @@
 import { globals } from '../globals/globals';
 import { rerender } from '../render/renderer';
 
-type SetValue<T> = (state: T | ((prev: T) => T)) => void;
+type SetValue<TState> = (state: TState | ((prev: TState) => TState)) => void;
 
-export const useState = <T>(initialValue: T): [T, SetValue<T>] => {
+export const useState = <TState>(
+  initialValue: TState
+): [TState, SetValue<TState>] => {
   const componentId = globals.currentId;
   const stateIndex = globals.currentStateIndex;
   globals.incrementCurrentStateIndex();
@@ -11,15 +13,15 @@ export const useState = <T>(initialValue: T): [T, SetValue<T>] => {
   const { cache } = globals.componentElements[componentId];
 
   if (!cache[stateIndex]) cache[stateIndex] = initialValue;
-  const setValue = (state: T | ((prev: T) => T)) => {
+  const setValue = (state: TState | ((prev: TState) => TState)) => {
     if (state instanceof Function) {
-      cache[stateIndex] = state(cache[stateIndex] as T);
+      cache[stateIndex] = state(cache[stateIndex] as TState);
     } else {
       cache[stateIndex] = state;
     }
 
     rerender(componentId);
   };
-  const value = cache[stateIndex] as T;
+  const value = cache[stateIndex] as TState;
   return [value, setValue];
 };

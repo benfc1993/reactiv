@@ -1,6 +1,8 @@
 import { useEffect } from '../hooks/useEffect';
+import { useRef } from '../hooks/useRef';
 import { useState } from '../hooks/useState';
 import { Reactiv } from '../types';
+import './styles.css';
 
 export const Text: Reactiv.Component<{ count: number }> = (attributes) => {
   const { count, children, ...restProps } = attributes;
@@ -35,26 +37,26 @@ export const Component: Reactiv.Component<{ count: number }> = (
 ): Node => {
   const { count, children, ...restProps } = attributes;
   const [value, setValue] = useState(0);
-
-  // console.log(children);
+  const ref = useRef<HTMLElement | null>(null);
 
   const onClick = () => {
     testCount *= 2;
     setValue((prev) => prev + 2);
+    ref.current?.classList.add('active');
   };
 
-  useEffect(() => {
-    console.log('rerender');
-  }, [value]);
+  const onOtherClick = () => {
+    ref.current?.classList.remove('active');
+  };
+
+  useEffect(() => {});
 
   return (
     <div {...restProps}>
-      <Text className={'T-1'} count={testCount}>
-        <Button />
-      </Text>
-      <Text className={'T-2'} count={value} />
-      {/* {children} */}
-      <button onClick={onClick}>Click Here</button>
+      {children}
+      <button onClick={onClick}>Set active</button>
+      <button onClick={onOtherClick}>Set inactive</button>
+      <p ref={ref}>{value}</p>
     </div>
   );
 };

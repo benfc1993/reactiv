@@ -11,6 +11,8 @@ export const handleProps = (
         element.setAttribute('style', parseStyles(value));
       } else if (key === 'className') {
         element.classList.value = value;
+      } else if (key === 'ref') {
+        value.current = element;
       } else {
         element.setAttribute(key, value);
       }
@@ -23,8 +25,8 @@ export const addChildren = (element: Node, children: any[]) => {
     .flatMap((c) => c)
     .forEach((child) => {
       if (child === undefined) return;
-      if (typeof child === 'string') {
-        const childEl = document.createTextNode(child);
+      if (typeof child === 'string' || typeof child === 'number') {
+        const childEl = document.createTextNode(child.toString());
         element.appendChild(childEl);
       } else if (typeof child === 'function') {
       } else {

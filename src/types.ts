@@ -14,6 +14,7 @@ export type Attributes = {
   id?: string;
   style?: Record<string, string>;
   className?: string;
+  ref?: { current: Node | null };
   onClick?: (e?: MouseEvent) => void;
   onMouseEnter?: (e?: MouseEvent) => void;
   onMouseLeave?: (e?: MouseEvent) => void;
