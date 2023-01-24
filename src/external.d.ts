@@ -1,6 +1,6 @@
 declare module JSX {
   type Element = Node;
   interface IntrinsicElements {
-    [elemName: string]: import("./types").Attributes;
+    [elemName: string]: import('./types').Attributes;
   }
 }

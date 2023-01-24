@@ -1,12 +1,7 @@
-import {
-  currentId,
-  hasRendered,
-  componentElements,
-  incrementId,
-  setCurrentId,
-  resetCurrentStateIndex
-} from './renderer';
-import { Reactiv } from './types';
+import { globals } from '../globals/globals';
+import { Reactiv } from '../types';
+import { CreateUUID } from '../utils/createUUID';
+import { addChildren, handleProps } from './utils';
 
 export const createElement = (
   fn: Reactiv.Component,
@@ -27,7 +22,6 @@ let currentColumn = 0;
 export const nodeGraph: Record<number, [string, number][]> = {};
 const layers: number[] = [];
 
-// const nodeTree: Map<HTMLElement, HTMLElement[]> = new Map();
 let componentOrphans: Set<[Node, string]> = new Set();
 
 function jsxPragma(
@@ -39,9 +33,9 @@ function jsxPragma(
 
   //TODO: Reduce duplication here
   if (typeof type === 'function') {
-    resetCurrentStateIndex();
+    globals.resetCurrentStateIndex();
 
-    if (!hasRendered) {
+    if (!globals.hasRendered) {
       const prevLayer = currentLayer;
       currentLayer++;
       currentColumn = layers.reduce((count, l) => {
@@ -70,41 +64,15 @@ function jsxPragma(
       const [el, id] = orphan;
       if (filteredChildren.includes(el)) {
         const temp = new Set(componentOrphans);
-        componentElements[id].parentEl = element;
+        globals.componentElements[id].parentEl = element;
         componentOrphans.delete(orphan);
       }
     });
   }
 
-  //TODO: abstract to function
-  if (props) {
-    Object.entries(props).forEach(([key, value]) => {
-      if (key.startsWith('on')) {
-        const eventType = key.replace('on', '').toLowerCase();
-        element.addEventListener(eventType, value);
-      } else if (key === 'style') {
-        element.setAttribute('style', parseStyles(value));
-      } else if (key === 'className') {
-        element.classList.value = value;
-      } else {
-        element.setAttribute(key, value);
-      }
-    });
-  }
+  handleProps(element, props);
 
-  //TODO: abstract to function
-  children
-    .flatMap((c) => c)
-    .forEach((child) => {
-      if (child === undefined) return;
-      if (typeof child === 'string') {
-        const childEl = document.createTextNode(child);
-        element.appendChild(childEl);
-      } else if (typeof child === 'function') {
-      } else {
-        element.appendChild(child);
-      }
-    });
+  addChildren(element, children);
 
   return element;
 }
@@ -117,45 +85,37 @@ const functionComponent = (
   if (!(currentLayer in nodeGraph)) {
     nodeGraph[currentLayer] = [];
   }
-  if (currentId !== undefined) {
-    if (hasRendered) {
-      incrementId();
-      const componentId = currentId;
+  if (globals.currentId !== undefined) {
+    const propsWithChildren = { ...props, children: children };
+    if (globals.hasRendered) {
+      globals.incrementCurrentId();
+      const componentId = globals.currentId;
       const el = type({ ...props, children: children });
 
       componentOrphans.add([el, componentId]);
 
-      componentElements[componentId] = {
-        ...componentElements[componentId],
-        props,
+      globals.componentElements[componentId] = {
+        ...globals.componentElements[componentId],
+        props: propsWithChildren,
         el
       };
 
       return el;
     } else {
-      //TODO: replace with UUID function
-      const id = Math.floor(Math.random() * 1000).toString();
-      setCurrentId(id.toString());
+      const id = CreateUUID();
+      globals.currentId = id;
 
       nodeGraph[currentLayer].push([id, currentColumn]);
-      componentElements[id] = createElement(type, {
-        ...props,
-        children: children
-      });
-      const el = type(props);
-      componentElements[id].el = el;
+
+      globals.componentElements[id] = createElement(type, propsWithChildren);
+      const el = type(propsWithChildren);
+
+      globals.componentElements[id].el = el;
 
       if (el) componentOrphans.add([el, id]);
       return el;
     }
   }
-};
-
-//TODO: move to utils folder
-const parseStyles = (styles: Record<string, string>) => {
-  return Object.entries(styles)
-    .map(([key, value]) => `${key}: ${value};`)
-    .join(' ');
 };
 
 export default jsxPragma;

@@ -1,19 +1,14 @@
-import {
-  componentElements,
-  currentId,
-  currentStateIndex,
-  incrementCurrentStateIndex,
-  rerender
-} from '../renderer';
+import { globals } from '../globals/globals';
+import { rerender } from '../render/renderer';
 
 type SetValue<T> = (state: T | ((prev: T) => T)) => void;
 
 export const useState = <T>(initialValue: T): [T, SetValue<T>] => {
-  const componentId = currentId;
-  const stateIndex = currentStateIndex;
-  incrementCurrentStateIndex();
+  const componentId = globals.currentId;
+  const stateIndex = globals.currentStateIndex;
+  globals.incrementCurrentStateIndex();
 
-  const { cache } = componentElements[componentId];
+  const { cache } = globals.componentElements[componentId];
 
   if (!cache[stateIndex]) cache[stateIndex] = initialValue;
   const setValue = (state: T | ((prev: T) => T)) => {

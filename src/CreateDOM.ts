@@ -1,5 +1,5 @@
-import { nodeGraph } from './jsx';
-import { connections, createConnections, componentElements } from './renderer';
+import { nodeGraph } from './Jsx/jsx';
+import { createConnections } from './render/renderer';
 import { Reactiv } from './types';
 
 export let rootNode!: HTMLElement;

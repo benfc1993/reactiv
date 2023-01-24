@@ -16,6 +16,7 @@ export const Text: Reactiv.Component<{ count: number }> = (attributes) => {
 
   return (
     <div {...restProps}>
+      {children}
       <p
         style={{ height: '100px', width: '50px' }}
         className={'test another class '}
@@ -23,7 +24,6 @@ export const Text: Reactiv.Component<{ count: number }> = (attributes) => {
         Some text {attributes.count.toString()}
       </p>
       <p onClick={onClick}>Other text {value.toString()}</p>
-      <Button />
     </div>
   );
 };
@@ -36,6 +36,8 @@ export const Component: Reactiv.Component<{ count: number }> = (
   const { count, children, ...restProps } = attributes;
   const [value, setValue] = useState(0);
 
+  // console.log(children);
+
   const onClick = () => {
     testCount *= 2;
     setValue((prev) => prev + 2);
@@ -47,13 +49,16 @@ export const Component: Reactiv.Component<{ count: number }> = (
 
   return (
     <div {...restProps}>
-      <Text className={'T-1'} count={testCount} />
+      <Text className={'T-1'} count={testCount}>
+        <Button />
+      </Text>
       <Text className={'T-2'} count={value} />
+      {/* {children} */}
       <button onClick={onClick}>Click Here</button>
     </div>
   );
 };
 
 export const Button = () => {
-  return <button onClick={() => {}}>Click</button>;
+  return <button onClick={() => {}}>Click kid</button>;
 };

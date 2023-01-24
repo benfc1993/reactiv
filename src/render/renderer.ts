@@ -1,23 +1,4 @@
-import { Reactiv } from './types';
-
-export let hasRendered = false;
-export let currentId: string = '';
-export const setCurrentId = (id: string) => (currentId = id);
-export const incrementId = () => {
-  currentNodeIndex += 1;
-  currentId = renderOrder[currentNodeIndex];
-};
-
-export let currentStateIndex = 0;
-export const incrementCurrentStateIndex = () => (currentStateIndex += 1);
-export const resetCurrentStateIndex = () => (currentStateIndex = 0);
-
-export const componentElements: {
-  [id: string]: Reactiv.Element;
-} = {};
-
-export let renderOrder: string[] = [];
-export let currentNodeIndex = 0;
+import { globals } from '../globals/globals';
 
 export const connections: Record<string, string[]> = {};
 let rootNode: string = '';
@@ -51,23 +32,23 @@ export const createConnections = (
 export let renderIds: number[] = [];
 
 export const rerender = (startFrom: string) => {
-  hasRendered = true;
+  globals.hasRendered = true;
 
-  renderOrder = createRenderOrder(startFrom);
+  globals.renderOrder = createRenderOrder(startFrom);
 
-  resetCurrentStateIndex();
-  currentNodeIndex = 0;
-  currentId = startFrom;
+  globals.resetCurrentStateIndex();
+  globals.currentNodeIndex = 0;
+  globals.currentId = startFrom;
   let parentElement: Node | HTMLElement | undefined =
-    componentElements[startFrom].parentEl;
+    globals.componentElements[startFrom].parentEl;
 
-  let element = componentElements[startFrom].el;
-  const res = componentElements[startFrom].fn(
-    componentElements[startFrom].props
+  let element = globals.componentElements[startFrom].el;
+  const res = globals.componentElements[startFrom].fn(
+    globals.componentElements[startFrom].props
   );
 
   if (element) parentElement?.replaceChild(res, element);
-  componentElements[startFrom].el = res;
+  globals.componentElements[startFrom].el = res;
 };
 
 const createRenderOrder = (start: string) => {

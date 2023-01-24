@@ -1,19 +1,14 @@
-import {
-  componentElements,
-  currentId,
-  currentStateIndex,
-  incrementCurrentStateIndex
-} from '../renderer';
+import { globals } from '../globals/globals';
 
 export const useEffect = (
   callback: () => void | (() => void),
   dependencies: unknown[]
 ) => {
-  const componentId = currentId;
-  const stateIndex = currentStateIndex;
-  incrementCurrentStateIndex();
+  const componentId = globals.currentId;
+  const stateIndex = globals.currentStateIndex;
+  globals.incrementCurrentStateIndex();
 
-  const { cache } = componentElements[componentId];
+  const { cache } = globals.componentElements[componentId];
 
   if (!cache[stateIndex]) {
     cache[stateIndex] = { dependencies: undefined, cleanup: null };
