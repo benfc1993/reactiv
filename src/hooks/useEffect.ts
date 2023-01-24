@@ -14,7 +14,6 @@ export const useEffect = (
   incrementCurrentStateIndex();
 
   const { cache } = componentElements[componentId];
-  console.log(componentElements);
 
   if (!cache[stateIndex]) {
     cache[stateIndex] = { dependencies: undefined, cleanup: null };

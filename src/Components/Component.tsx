@@ -23,7 +23,6 @@ export const Text: Reactiv.Component<{ count: number }> = (attributes) => {
         Some text {attributes.count.toString()}
       </p>
       <p onClick={onClick}>Other text {value.toString()}</p>
-      <p>{parent}</p>
       <Button />
     </div>
   );
@@ -50,12 +49,11 @@ export const Component: Reactiv.Component<{ count: number }> = (
     <div {...restProps}>
       <Text className={'T-1'} count={testCount} />
       <Text className={'T-2'} count={value} />
-      <p>{parent}</p>
       <button onClick={onClick}>Click Here</button>
     </div>
   );
 };
 
 export const Button = () => {
-  return <button onClick={() => {}}>Click {parent}</button>;
+  return <button onClick={() => {}}>Click</button>;
 };

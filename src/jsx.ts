@@ -1,4 +1,3 @@
-import jsxFrag from './frag';
 import {
   currentId,
   hasRendered,
@@ -38,6 +37,7 @@ function jsxPragma(
 ) {
   const children = args.flatMap((c) => c);
 
+  //TODO: Reduce duplication here
   if (typeof type === 'function') {
     resetCurrentStateIndex();
 
@@ -76,6 +76,7 @@ function jsxPragma(
     });
   }
 
+  //TODO: abstract to function
   if (props) {
     Object.entries(props).forEach(([key, value]) => {
       if (key.startsWith('on')) {
@@ -91,6 +92,7 @@ function jsxPragma(
     });
   }
 
+  //TODO: abstract to function
   children
     .flatMap((c) => c)
     .forEach((child) => {
@@ -131,6 +133,7 @@ const functionComponent = (
 
       return el;
     } else {
+      //TODO: replace with UUID function
       const id = Math.floor(Math.random() * 1000).toString();
       setCurrentId(id.toString());
 
@@ -148,6 +151,7 @@ const functionComponent = (
   }
 };
 
+//TODO: move to utils folder
 const parseStyles = (styles: Record<string, string>) => {
   return Object.entries(styles)
     .map(([key, value]) => `${key}: ${value};`)
