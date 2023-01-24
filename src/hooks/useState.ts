@@ -1,4 +1,4 @@
-import { globalParent, rerender } from "../renderer";
+import { globalParent, rerender } from '../renderer';
 
 let values: Record<string, any> = {};
 
@@ -10,7 +10,6 @@ export const useState = <T>(initialValue: T): [T, SetValue<T>, string] => {
   if (!values[parent]) values[parent] = initialValue;
   const setValue = (state: T | ((prev: T) => T)) => {
     if (state instanceof Function) {
-      console.log({ parent });
       values[parent] = state(values[parent]);
     } else {
     }

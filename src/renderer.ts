@@ -1,7 +1,7 @@
-import { Reactiv } from "./types";
+import { Reactiv } from './types';
 
 export let hasRendered = false;
-export let currentId: string | undefined = "";
+export let currentId: string | undefined = '';
 
 export const nodeOrder: {
   [id: string]: {
@@ -20,8 +20,8 @@ export const incrementId = () => {
 };
 
 export const connections: Record<string, string[]> = {};
-let rootNode: string = "";
-export let globalParent: string = "";
+let rootNode: string = '';
+export let globalParent: string = '';
 export const setGlobalParent = (value: string) => {
   globalParent = value;
 };
@@ -44,7 +44,7 @@ export const createConnections = (
     entries.forEach(([id, column]) => {
       if (column !== -1) {
         const parentId = nodeGraphArray[i - 1][column][0];
-        connections[parentId].unshift(id.toString());
+        connections[parentId].push(id.toString());
         nodeOrder[id].parent = parentId.toString();
       } else {
         rootNode = id.toString();
@@ -56,8 +56,6 @@ export const createConnections = (
 export let renderIds: number[] = [];
 
 export const rerender = (startFrom: string) => {
-  console.log("test");
-  console.log(nodeOrder[startFrom].parentEl);
   hasRendered = true;
 
   renderOrder = createRenderOrder(startFrom);
@@ -86,7 +84,7 @@ const createRenderOrder = (start: string) => {
 const addIdsToOrder = (id: string, order: string[]) => {
   const ids = connections[id];
   if (ids.length > 0) {
-    ids.reverse().forEach((id) => {
+    ids.forEach((id) => {
       order.push(id);
       return addIdsToOrder(id, order);
     });

@@ -1,7 +1,7 @@
-import { useEffect } from "../hooks/useEffect";
-import { useState } from "../hooks/useState";
-import { globalParent, rerender } from "../renderer";
-import { Reactiv } from "../types";
+import { useEffect } from '../hooks/useEffect';
+import { useState } from '../hooks/useState';
+import { globalParent, rerender } from '../renderer';
+import { Reactiv } from '../types';
 
 export const Text: Reactiv.Component<{ count: number }> = (attributes) => {
   const { count, children, ...restProps } = attributes;
@@ -12,15 +12,15 @@ export const Text: Reactiv.Component<{ count: number }> = (attributes) => {
   };
 
   useEffect(() => {
-    console.log(value);
-    console.log("here");
+    console.log('here');
   }, [value]);
 
   return (
     <div {...restProps}>
       <p
-        style={{ height: "100px", width: "50px" }}
-        className={"test another class "}>
+        style={{ height: '100px', width: '50px' }}
+        className={'test another class '}
+      >
         Some text {attributes.count.toString()}
       </p>
       <p onClick={onClick}>Other text {value.toString()}</p>
@@ -40,20 +40,17 @@ export const Component: Reactiv.Component<{ count: number }> = (
 
   const onClick = () => {
     testCount *= 2;
-    // console.log(id);
-    // console.log({ id });
-    // rerender(id);
     setValue((prev) => prev + 2);
   };
 
   useEffect(() => {
-    console.log("rerender");
+    console.log('rerender');
   }, [value]);
 
   return (
     <div {...restProps}>
-      <Text count={testCount} />
-      <Text count={value} />
+      <Text className={'T-1'} count={testCount} />
+      <Text className={'T-2'} count={value} />
       <p>{parent}</p>
       <button onClick={onClick}>Click Here</button>
     </div>
@@ -61,5 +58,6 @@ export const Component: Reactiv.Component<{ count: number }> = (
 };
 
 export const Button = () => {
-  return <button onClick={() => {}}>Click</button>;
+  const [, , parent] = useState(0);
+  return <button onClick={() => {}}>Click {parent}</button>;
 };

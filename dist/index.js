@@ -39,16 +39,17 @@ function __rest(s, e) {
 }
 
 var hasRendered = false;
-var currentId = "";
+var currentId = '';
 var nodeOrder = {};
 var renderOrder = [];
 var currentNodeIndex = 0;
 var incrementId = function () {
+    console.log('increment');
     currentNodeIndex += 1;
     currentId = renderOrder[currentNodeIndex];
 };
 var connections = {};
-var globalParent = "";
+var globalParent = '';
 var setGlobalParent = function (value) {
     globalParent = value;
 };
@@ -60,13 +61,14 @@ var createConnections = function (nodeGraph) {
             connections[id] = [];
         });
     });
+    console.log(nodeGraphArray);
     var _loop_1 = function (i) {
         var entries = nodeGraphArray[i];
         entries.forEach(function (_a) {
             var id = _a[0], column = _a[1];
             if (column !== -1) {
                 var parentId = nodeGraphArray[i - 1][column][0];
-                connections[parentId].unshift(id.toString());
+                connections[parentId].push(id.toString());
                 nodeOrder[id].parent = parentId.toString();
             }
             else {
@@ -79,10 +81,9 @@ var createConnections = function (nodeGraph) {
     }
 };
 var rerender = function (startFrom) {
-    console.log("test");
-    console.log(nodeOrder[startFrom].parentEl);
     hasRendered = true;
     renderOrder = createRenderOrder(startFrom);
+    console.log(renderOrder);
     currentNodeIndex = 0;
     currentId = startFrom;
     globalParent = startFrom;
@@ -92,6 +93,7 @@ var rerender = function (startFrom) {
     if (element)
         parentElement === null || parentElement === void 0 ? void 0 : parentElement.replaceChild(res, element);
     nodeOrder[startFrom].element.el = res;
+    console.log(nodeOrder);
 };
 var createRenderOrder = function (start) {
     var order = [start];
@@ -101,7 +103,7 @@ var createRenderOrder = function (start) {
 var addIdsToOrder = function (id, order) {
     var ids = connections[id];
     if (ids.length > 0) {
-        ids.reverse().forEach(function (id) {
+        ids.forEach(function (id) {
             order.push(id);
             return addIdsToOrder(id, order);
         });
@@ -120,6 +122,7 @@ var createElement = function (fn, props, el) {
 };
 var currentLayer = -1;
 var currentColumn = 0;
+var setId = 0;
 var nodeGraph = {};
 var layers = [];
 // const nodeTree: Map<HTMLElement, HTMLElement[]> = new Map();
@@ -130,7 +133,7 @@ function jsxPragma(type, props) {
         args[_i - 2] = arguments[_i];
     }
     var children = args.flatMap(function (c) { return c; });
-    if (typeof type === "function") {
+    if (typeof type === 'function') {
         if (!hasRendered) {
             var prevLayer_1 = currentLayer;
             currentLayer++;
@@ -145,30 +148,37 @@ function jsxPragma(type, props) {
             return res;
         }
         else {
-            return functionComponent(type, props, children);
+            var res = functionComponent(type, props, children);
+            return res;
         }
     }
     var element = document.createElement(type);
-    var filteredChildren = children.filter(function (child) { return typeof child !== "string" && child !== ""; });
+    var filteredChildren = children.filter(function (child) { return typeof child !== 'string' && child !== ''; });
     if (filteredChildren.length > 0) {
-        componentOrphans.forEach(function (_a) {
-            var el = _a[0], id = _a[1];
+        componentOrphans.forEach(function (orphan) {
+            var el = orphan[0], id = orphan[1];
             if (filteredChildren.includes(el)) {
+                // console.log(id);
+                // console.log(element);
+                // console.log(filteredChildren);
+                var temp = new Set(componentOrphans);
+                console.log(temp);
                 nodeOrder[id].parentEl = element;
+                componentOrphans.delete(orphan);
             }
         });
     }
     if (props) {
         Object.entries(props).forEach(function (_a) {
             var key = _a[0], value = _a[1];
-            if (key.startsWith("on")) {
-                var eventType = key.replace("on", "").toLowerCase();
+            if (key.startsWith('on')) {
+                var eventType = key.replace('on', '').toLowerCase();
                 element.addEventListener(eventType, value);
             }
-            else if (key === "style") {
-                element.setAttribute("style", parseStyles(value));
+            else if (key === 'style') {
+                element.setAttribute('style', parseStyles(value));
             }
-            else if (key === "className") {
+            else if (key === 'className') {
                 element.classList.value = value;
             }
             else {
@@ -181,11 +191,11 @@ function jsxPragma(type, props) {
         .forEach(function (child) {
         if (child === undefined)
             return;
-        if (typeof child === "string") {
+        if (typeof child === 'string') {
             var childEl = document.createTextNode(child);
             element.appendChild(childEl);
         }
-        else if (typeof child === "function") ;
+        else if (typeof child === 'function') ;
         else {
             element.appendChild(child);
         }
@@ -198,22 +208,28 @@ var functionComponent = function (type, props, children) {
     }
     if (currentId !== undefined) {
         if (hasRendered) {
+            console.log("".concat(type.name, " - ").concat(props === null || props === void 0 ? void 0 : props.className));
             incrementId();
             setGlobalParent(currentId);
+            var componentId = currentId;
             var res = type(__assign(__assign({}, props), { children: children }));
-            if (res)
-                componentOrphans.add([res, currentId]);
+            componentOrphans.add([res, componentId]);
+            nodeOrder[componentId].element.el = res;
+            console.log('update');
+            console.log(componentId);
+            console.log(res);
             return res;
         }
         else {
-            var id = Math.floor(Math.random() * 1000).toString();
+            // const id = Math.floor(Math.random() * 1000).toString();
+            var id = (setId += 1).toString();
             setGlobalParent(id.toString());
             nodeGraph[currentLayer].push([id, currentColumn]);
             var res = type(props);
             nodeOrder[id] = {
                 id: id,
                 element: createElement(type, __assign(__assign({}, props), { children: children }), res),
-                parent: ""
+                parent: ''
             };
             if (res)
                 componentOrphans.add([res, id]);
@@ -227,7 +243,7 @@ var parseStyles = function (styles) {
         var key = _a[0], value = _a[1];
         return "".concat(key, ": ").concat(value, ";");
     })
-        .join(" ");
+        .join(' ');
 };
 
 var passedState = {};
@@ -264,10 +280,10 @@ var Text = function (attributes) {
     };
     useEffect(function () {
         console.log(value);
-        console.log("here");
+        console.log('here');
     }, [value]);
     return (jsxPragma('div', Object.assign({}, restProps), [
-      jsxPragma('p', {style: { height: "100px", width: "50px"}, className: "test another class "}, [
+      jsxPragma('p', {style: { height: '100px', width: '50px'}, className: 'test another class '}, [
         "Some text ", attributes.count.toString()
       ]),
       jsxPragma('p', {onClick: onClick}, ["Other text ", value.toString()]),
@@ -287,17 +303,18 @@ var Component = function (attributes) {
         setValue(function (prev) { return prev + 2; });
     };
     useEffect(function () {
-        console.log("rerender");
+        console.log('rerender');
     }, [value]);
     return (jsxPragma('div', Object.assign({}, restProps), [
-      jsxPragma(Text, {count: testCount}),
-      jsxPragma(Text, {count: value}),
+      jsxPragma(Text, {className: 'T-1', count: testCount}),
+      jsxPragma(Text, {className: 'T-2', count: value}),
       jsxPragma('p', null, [parent]),
       jsxPragma('button', {onClick: onClick}, ["Click Here"])
     ]));
 };
 var Button = function () {
-    return jsxPragma('button', {onClick: function () { }}, ["Click"]);
+    var _a = useState(0), parent = _a[2];
+    return jsxPragma('button', {onClick: function () { }}, ["Click ", parent]);
 };
 
 var CreateDOM = function (rootId, rootFn) {
@@ -313,23 +330,23 @@ var CreateDOM = function (rootId, rootFn) {
     }
 };
 
-CreateDOM("root", function () {
+CreateDOM('root', function () {
     return (jsxPragma('div', {className: "root"}, [
       /* - 9 | L0 C1 */
       jsxPragma('div', {className: "p-1"}, [
-        " ",
+        ' ',
         /* - 3 | L1 C0 */
         jsxPragma('p', {className: "c-1-1"}, ["Child 1"])," ", /* - 1 | L2 C0 */
         jsxPragma('p', {className: "c-1-2"}, ["Child 2"])," "/* - 2 | L2 C0 */
       ]),
       jsxPragma('div', {className: "p-2"}, [
-        " ",
+        ' ',
         /* - 8 | L1 C0 */
         jsxPragma('p', {className: "c-2-1"}, ["Child 1"])," ", /* - 4 | L2 C1 */
-        jsxPragma(Component, {className: "Component", count: 4}),
+        jsxPragma(Component, {className: 'Component', count: 4}),
         jsxPragma('p', {className: "c-2-2"}, ["Child 2"])," ", /* - 5 | L2 C1 */
         jsxPragma('div', {className: "p-2-1"}, [
-          " ",
+          ' ',
           /* - 7 | L2 C1 */
           jsxPragma('p', {className: "c-2-1-1"}, ["grandchild 1"])," "/* - 6 | L3 C2 */
         ])

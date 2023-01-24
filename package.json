@@ -5,8 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "webpack --watch",
-    "build:all": "cp public dist -r && mv dist/public/index.html dist/index.html && yarn rollup -c --bundleConfigAsCjs"
+    "build": "cp public dist -r && mv dist/public/index.html dist/index.html && yarn rollup -c --bundleConfigAsCjs",
+    "dev": "ENVIRONMENT=DEV yarn build -- -w",
+    "start": "ENVIRONMENT=PROD yarn build"
   },
   "keywords": [],
   "author": "",

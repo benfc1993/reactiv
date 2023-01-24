@@ -4,8 +4,8 @@ import {
   nodeOrder,
   incrementId,
   setGlobalParent
-} from "./renderer";
-import { Reactiv } from "./types";
+} from './renderer';
+import { Reactiv } from './types';
 
 export const createElement = (
   fn: Reactiv.Component,
@@ -35,7 +35,7 @@ function jsxPragma(
 ) {
   const children = args.flatMap((c) => c);
 
-  if (typeof type === "function") {
+  if (typeof type === 'function') {
     if (!hasRendered) {
       const prevLayer = currentLayer;
       currentLayer++;
@@ -49,32 +49,36 @@ function jsxPragma(
       currentLayer = prevLayer;
       return res;
     } else {
-      return functionComponent(type, props, children);
+      const res = functionComponent(type, props, children);
+      return res;
     }
   }
 
   const element = document.createElement(type as string);
 
   const filteredChildren = children.filter(
-    (child) => typeof child !== "string" && child !== ""
+    (child) => typeof child !== 'string' && child !== ''
   );
 
   if (filteredChildren.length > 0) {
-    componentOrphans.forEach(([el, id]) => {
+    componentOrphans.forEach((orphan) => {
+      const [el, id] = orphan;
       if (filteredChildren.includes(el)) {
+        const temp = new Set(componentOrphans);
         nodeOrder[id].parentEl = element;
+        componentOrphans.delete(orphan);
       }
     });
   }
 
   if (props) {
     Object.entries(props).forEach(([key, value]) => {
-      if (key.startsWith("on")) {
-        const eventType = key.replace("on", "").toLowerCase();
+      if (key.startsWith('on')) {
+        const eventType = key.replace('on', '').toLowerCase();
         element.addEventListener(eventType, value);
-      } else if (key === "style") {
-        element.setAttribute("style", parseStyles(value));
-      } else if (key === "className") {
+      } else if (key === 'style') {
+        element.setAttribute('style', parseStyles(value));
+      } else if (key === 'className') {
         element.classList.value = value;
       } else {
         element.setAttribute(key, value);
@@ -86,10 +90,10 @@ function jsxPragma(
     .flatMap((c) => c)
     .forEach((child) => {
       if (child === undefined) return;
-      if (typeof child === "string") {
+      if (typeof child === 'string') {
         const childEl = document.createTextNode(child);
         element.appendChild(childEl);
-      } else if (typeof child === "function") {
+      } else if (typeof child === 'function') {
       } else {
         element.appendChild(child);
       }
@@ -110,8 +114,10 @@ const functionComponent = (
     if (hasRendered) {
       incrementId();
       setGlobalParent(currentId);
+      const componentId = currentId;
       const res = type({ ...props, children: children });
-      if (res) componentOrphans.add([res, currentId]);
+      componentOrphans.add([res, componentId]);
+      nodeOrder[componentId].element.el = res;
       return res;
     } else {
       const id = Math.floor(Math.random() * 1000).toString();
@@ -122,7 +128,7 @@ const functionComponent = (
       nodeOrder[id] = {
         id: id,
         element: createElement(type, { ...props, children: children }, res),
-        parent: ""
+        parent: ''
       };
       if (res) componentOrphans.add([res, id]);
       return res;
@@ -133,7 +139,7 @@ const functionComponent = (
 const parseStyles = (styles: Record<string, string>) => {
   return Object.entries(styles)
     .map(([key, value]) => `${key}: ${value};`)
-    .join(" ");
+    .join(' ');
 };
 
 export default jsxPragma;
