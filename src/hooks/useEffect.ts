@@ -1,18 +1,33 @@
-import { globalParent } from "../renderer";
-
-const passedState: Record<string, any[]> = {};
+import {
+  componentElements,
+  currentId,
+  currentStateIndex,
+  incrementCurrentStateIndex
+} from '../renderer';
 
 export const useEffect = (
   callback: () => void | (() => void),
   dependencies: unknown[]
 ) => {
-  const parent = globalParent;
-  const prevDeps = passedState[parent];
+  const componentId = currentId;
+  const stateIndex = currentStateIndex;
+  incrementCurrentStateIndex();
+
+  const { cache } = componentElements[componentId];
+  console.log(componentElements);
+
+  if (!cache[stateIndex]) {
+    cache[stateIndex] = { dependencies: undefined, cleanup: null };
+  }
+
   if (
-    !passedState[parent] ||
-    prevDeps.some((dep, idx) => dep != dependencies[idx])
+    cache[stateIndex].dependencies === undefined ||
+    (cache[stateIndex].dependencies as []).some(
+      (dep, idx) => dep != dependencies[idx]
+    )
   ) {
-    callback();
-    passedState[parent] = dependencies;
+    if (cache[stateIndex].cleanup) cache[stateIndex].cleanup();
+    cache[stateIndex].cleanup = callback();
+    cache[stateIndex].dependencies = dependencies;
   }
 };

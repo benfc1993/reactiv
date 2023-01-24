@@ -1,20 +1,30 @@
-import { globalParent, rerender } from '../renderer';
-
-let values: Record<string, any> = {};
+import {
+  componentElements,
+  currentId,
+  currentStateIndex,
+  incrementCurrentStateIndex,
+  rerender
+} from '../renderer';
 
 type SetValue<T> = (state: T | ((prev: T) => T)) => void;
 
-export const useState = <T>(initialValue: T): [T, SetValue<T>, string] => {
-  const parent = globalParent;
+export const useState = <T>(initialValue: T): [T, SetValue<T>] => {
+  const componentId = currentId;
+  const stateIndex = currentStateIndex;
+  incrementCurrentStateIndex();
 
-  if (!values[parent]) values[parent] = initialValue;
+  const { cache } = componentElements[componentId];
+
+  if (!cache[stateIndex]) cache[stateIndex] = initialValue;
   const setValue = (state: T | ((prev: T) => T)) => {
     if (state instanceof Function) {
-      values[parent] = state(values[parent]);
+      cache[stateIndex] = state(cache[stateIndex] as T);
     } else {
+      cache[stateIndex] = state;
     }
 
-    rerender(parent);
+    rerender(componentId);
   };
-  return [values[parent], setValue, parent];
+  const value = cache[stateIndex] as T;
+  return [value, setValue];
 };

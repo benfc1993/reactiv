@@ -1,8 +1,8 @@
-function jsxFragmentPragma(children: (string | string[] | HTMLElement[])[]) {
+function jsxFrag(children: (string | string[] | HTMLElement[])[]) {
   try {
     const fragment = document.createDocumentFragment();
     children.forEach((child) => {
-      if (typeof child === "string") {
+      if (typeof child === 'string') {
       } else if (child instanceof Array) {
         child.forEach((item) => fragment.appendChild(item as any));
         fragment.appendChild(document.createTextNode(child as any));
@@ -16,4 +16,4 @@ function jsxFragmentPragma(children: (string | string[] | HTMLElement[])[]) {
   }
 }
 
-export { jsxFragmentPragma };
+export default jsxFrag;

@@ -3,6 +3,8 @@ import jsx from 'rollup-plugin-jsx';
 import inject from '@rollup/plugin-inject';
 import serve from 'rollup-plugin-serve';
 import livereload from 'rollup-plugin-livereload';
+import { uglify } from 'rollup-plugin-uglify';
+import css from 'rollup-plugin-import-css';
 import path from 'path';
 
 const devPlugins =
@@ -14,16 +16,17 @@ const devPlugins =
         }),
         livereload()
       ]
-    : [];
+    : [uglify()];
 
 export default {
   input: ['./src/index.tsx'],
   output: {
     format: 'es',
     dir: 'dist',
-    globals: { ['./src/jsx.ts']: 'jsxPragma' }
+    globals: { ['./src/jsx.ts']: 'jsxPragma', ['./src/frag.ts']: 'jsxFrag' }
   },
   plugins: [
+    css(),
     [jsx({ factory: 'jsxPragma', passUnknownTagsToFactory: true })],
     [
       typescript({
@@ -45,7 +48,8 @@ export default {
         reactNamespace: 'JSX'
       }),
       inject({
-        jsxPragma: path.resolve(__dirname, 'src/jsx.ts')
+        jsxPragma: path.resolve(__dirname, 'src/jsx.ts'),
+        jsxFrag: path.resolve(__dirname, 'src/frag.ts')
       }),
       ...devPlugins
     ]

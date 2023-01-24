@@ -1,11 +1,10 @@
 import { useEffect } from '../hooks/useEffect';
 import { useState } from '../hooks/useState';
-import { globalParent, rerender } from '../renderer';
 import { Reactiv } from '../types';
 
 export const Text: Reactiv.Component<{ count: number }> = (attributes) => {
   const { count, children, ...restProps } = attributes;
-  const [value, setValue, parent] = useState(0);
+  const [value, setValue] = useState(count);
 
   const onClick = () => {
     setValue((prev) => prev + 1);
@@ -36,7 +35,7 @@ export const Component: Reactiv.Component<{ count: number }> = (
   attributes
 ): Node => {
   const { count, children, ...restProps } = attributes;
-  const [value, setValue, parent] = useState(0);
+  const [value, setValue] = useState(0);
 
   const onClick = () => {
     testCount *= 2;
@@ -58,6 +57,5 @@ export const Component: Reactiv.Component<{ count: number }> = (
 };
 
 export const Button = () => {
-  const [, , parent] = useState(0);
   return <button onClick={() => {}}>Click {parent}</button>;
 };

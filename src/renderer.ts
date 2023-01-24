@@ -1,30 +1,26 @@
 import { Reactiv } from './types';
 
 export let hasRendered = false;
-export let currentId: string | undefined = '';
-
-export const nodeOrder: {
-  [id: string]: {
-    id: string;
-    element: Reactiv.Element;
-    parent: string;
-    parentEl?: Node;
-  };
-} = {};
-
-export let renderOrder: string[] = [];
-export let currentNodeIndex = 0;
+export let currentId: string = '';
+export const setCurrentId = (id: string) => (currentId = id);
 export const incrementId = () => {
   currentNodeIndex += 1;
   currentId = renderOrder[currentNodeIndex];
 };
 
+export let currentStateIndex = 0;
+export const incrementCurrentStateIndex = () => (currentStateIndex += 1);
+export const resetCurrentStateIndex = () => (currentStateIndex = 0);
+
+export const componentElements: {
+  [id: string]: Reactiv.Element;
+} = {};
+
+export let renderOrder: string[] = [];
+export let currentNodeIndex = 0;
+
 export const connections: Record<string, string[]> = {};
 let rootNode: string = '';
-export let globalParent: string = '';
-export const setGlobalParent = (value: string) => {
-  globalParent = value;
-};
 
 export const createConnections = (
   nodeGraph: Record<number, [string, number][]>
@@ -45,7 +41,6 @@ export const createConnections = (
       if (column !== -1) {
         const parentId = nodeGraphArray[i - 1][column][0];
         connections[parentId].push(id.toString());
-        nodeOrder[id].parent = parentId.toString();
       } else {
         rootNode = id.toString();
       }
@@ -60,19 +55,19 @@ export const rerender = (startFrom: string) => {
 
   renderOrder = createRenderOrder(startFrom);
 
+  resetCurrentStateIndex();
   currentNodeIndex = 0;
   currentId = startFrom;
-  globalParent = startFrom;
   let parentElement: Node | HTMLElement | undefined =
-    nodeOrder[startFrom].parentEl;
+    componentElements[startFrom].parentEl;
 
-  let element = nodeOrder[startFrom].element.el;
-  const res = nodeOrder[startFrom].element.fn(
-    nodeOrder[startFrom].element.props
+  let element = componentElements[startFrom].el;
+  const res = componentElements[startFrom].fn(
+    componentElements[startFrom].props
   );
 
   if (element) parentElement?.replaceChild(res, element);
-  nodeOrder[startFrom].element.el = res;
+  componentElements[startFrom].el = res;
 };
 
 const createRenderOrder = (start: string) => {

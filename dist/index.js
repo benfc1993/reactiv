@@ -40,19 +40,18 @@ function __rest(s, e) {
 
 var hasRendered = false;
 var currentId = '';
-var nodeOrder = {};
-var renderOrder = [];
-var currentNodeIndex = 0;
+var setCurrentId = function (id) { return (currentId = id); };
 var incrementId = function () {
-    console.log('increment');
     currentNodeIndex += 1;
     currentId = renderOrder[currentNodeIndex];
 };
+var currentStateIndex = 0;
+var incrementCurrentStateIndex = function () { return (currentStateIndex += 1); };
+var resetCurrentStateIndex = function () { return (currentStateIndex = 0); };
+var componentElements = {};
+var renderOrder = [];
+var currentNodeIndex = 0;
 var connections = {};
-var globalParent = '';
-var setGlobalParent = function (value) {
-    globalParent = value;
-};
 var createConnections = function (nodeGraph) {
     var nodeGraphArray = Object.values(nodeGraph);
     nodeGraphArray.forEach(function (layerEntries) {
@@ -61,7 +60,6 @@ var createConnections = function (nodeGraph) {
             connections[id] = [];
         });
     });
-    console.log(nodeGraphArray);
     var _loop_1 = function (i) {
         var entries = nodeGraphArray[i];
         entries.forEach(function (_a) {
@@ -69,7 +67,6 @@ var createConnections = function (nodeGraph) {
             if (column !== -1) {
                 var parentId = nodeGraphArray[i - 1][column][0];
                 connections[parentId].push(id.toString());
-                nodeOrder[id].parent = parentId.toString();
             }
             else {
                 id.toString();
@@ -83,17 +80,15 @@ var createConnections = function (nodeGraph) {
 var rerender = function (startFrom) {
     hasRendered = true;
     renderOrder = createRenderOrder(startFrom);
-    console.log(renderOrder);
+    resetCurrentStateIndex();
     currentNodeIndex = 0;
     currentId = startFrom;
-    globalParent = startFrom;
-    var parentElement = nodeOrder[startFrom].parentEl;
-    var element = nodeOrder[startFrom].element.el;
-    var res = nodeOrder[startFrom].element.fn(nodeOrder[startFrom].element.props);
+    var parentElement = componentElements[startFrom].parentEl;
+    var element = componentElements[startFrom].el;
+    var res = componentElements[startFrom].fn(componentElements[startFrom].props);
     if (element)
         parentElement === null || parentElement === void 0 ? void 0 : parentElement.replaceChild(res, element);
-    nodeOrder[startFrom].element.el = res;
-    console.log(nodeOrder);
+    componentElements[startFrom].el = res;
 };
 var createRenderOrder = function (start) {
     var order = [start];
@@ -117,12 +112,12 @@ var createElement = function (fn, props, el) {
     return {
         fn: fn,
         props: props,
-        el: el
+        el: el,
+        cache: []
     };
 };
 var currentLayer = -1;
 var currentColumn = 0;
-var setId = 0;
 var nodeGraph = {};
 var layers = [];
 // const nodeTree: Map<HTMLElement, HTMLElement[]> = new Map();
@@ -134,6 +129,7 @@ function jsxPragma(type, props) {
     }
     var children = args.flatMap(function (c) { return c; });
     if (typeof type === 'function') {
+        resetCurrentStateIndex();
         if (!hasRendered) {
             var prevLayer_1 = currentLayer;
             currentLayer++;
@@ -158,12 +154,7 @@ function jsxPragma(type, props) {
         componentOrphans.forEach(function (orphan) {
             var el = orphan[0], id = orphan[1];
             if (filteredChildren.includes(el)) {
-                // console.log(id);
-                // console.log(element);
-                // console.log(filteredChildren);
-                var temp = new Set(componentOrphans);
-                console.log(temp);
-                nodeOrder[id].parentEl = element;
+                componentElements[id].parentEl = element;
                 componentOrphans.delete(orphan);
             }
         });
@@ -208,32 +199,23 @@ var functionComponent = function (type, props, children) {
     }
     if (currentId !== undefined) {
         if (hasRendered) {
-            console.log("".concat(type.name, " - ").concat(props === null || props === void 0 ? void 0 : props.className));
             incrementId();
-            setGlobalParent(currentId);
             var componentId = currentId;
-            var res = type(__assign(__assign({}, props), { children: children }));
-            componentOrphans.add([res, componentId]);
-            nodeOrder[componentId].element.el = res;
-            console.log('update');
-            console.log(componentId);
-            console.log(res);
-            return res;
+            var el = type(__assign(__assign({}, props), { children: children }));
+            componentOrphans.add([el, componentId]);
+            componentElements[componentId] = __assign(__assign({}, componentElements[componentId]), { props: props, el: el });
+            return el;
         }
         else {
-            // const id = Math.floor(Math.random() * 1000).toString();
-            var id = (setId += 1).toString();
-            setGlobalParent(id.toString());
+            var id = Math.floor(Math.random() * 1000).toString();
+            setCurrentId(id.toString());
             nodeGraph[currentLayer].push([id, currentColumn]);
-            var res = type(props);
-            nodeOrder[id] = {
-                id: id,
-                element: createElement(type, __assign(__assign({}, props), { children: children }), res),
-                parent: ''
-            };
-            if (res)
-                componentOrphans.add([res, id]);
-            return res;
+            componentElements[id] = createElement(type, __assign(__assign({}, props), { children: children }));
+            var el = type(props);
+            componentElements[id].el = el;
+            if (el)
+                componentOrphans.add([el, id]);
+            return el;
         }
     }
 };
@@ -246,40 +228,51 @@ var parseStyles = function (styles) {
         .join(' ');
 };
 
-var passedState = {};
 var useEffect = function (callback, dependencies) {
-    var parent = globalParent;
-    var prevDeps = passedState[parent];
-    if (!passedState[parent] ||
-        prevDeps.some(function (dep, idx) { return dep != dependencies[idx]; })) {
-        callback();
-        passedState[parent] = dependencies;
+    var componentId = currentId;
+    var stateIndex = currentStateIndex;
+    incrementCurrentStateIndex();
+    var cache = componentElements[componentId].cache;
+    console.log(componentElements);
+    if (!cache[stateIndex]) {
+        cache[stateIndex] = { dependencies: undefined, cleanup: null };
+    }
+    if (cache[stateIndex].dependencies === undefined ||
+        cache[stateIndex].dependencies.some(function (dep, idx) { return dep != dependencies[idx]; })) {
+        if (cache[stateIndex].cleanup)
+            cache[stateIndex].cleanup();
+        cache[stateIndex].cleanup = callback();
+        cache[stateIndex].dependencies = dependencies;
     }
 };
 
-var values = {};
 var useState = function (initialValue) {
-    var parent = globalParent;
-    if (!values[parent])
-        values[parent] = initialValue;
+    var componentId = currentId;
+    var stateIndex = currentStateIndex;
+    incrementCurrentStateIndex();
+    var cache = componentElements[componentId].cache;
+    if (!cache[stateIndex])
+        cache[stateIndex] = initialValue;
     var setValue = function (state) {
         if (state instanceof Function) {
-            console.log({ parent: parent });
-            values[parent] = state(values[parent]);
+            cache[stateIndex] = state(cache[stateIndex]);
         }
-        rerender(parent);
+        else {
+            cache[stateIndex] = state;
+        }
+        rerender(componentId);
     };
-    return [values[parent], setValue, parent];
+    var value = cache[stateIndex];
+    return [value, setValue];
 };
 
 var Text = function (attributes) {
-    attributes.count; attributes.children; var restProps = __rest(attributes, ["count", "children"]);
-    var _a = useState(0), value = _a[0], setValue = _a[1], parent = _a[2];
+    var count = attributes.count; attributes.children; var restProps = __rest(attributes, ["count", "children"]);
+    var _a = useState(count), value = _a[0], setValue = _a[1];
     var onClick = function () {
         setValue(function (prev) { return prev + 1; });
     };
     useEffect(function () {
-        console.log(value);
         console.log('here');
     }, [value]);
     return (jsxPragma('div', Object.assign({}, restProps), [
@@ -294,12 +287,9 @@ var Text = function (attributes) {
 var testCount = 1;
 var Component = function (attributes) {
     attributes.count; attributes.children; var restProps = __rest(attributes, ["count", "children"]);
-    var _a = useState(0), value = _a[0], setValue = _a[1], parent = _a[2];
+    var _a = useState(0), value = _a[0], setValue = _a[1];
     var onClick = function () {
         testCount *= 2;
-        // console.log(id);
-        // console.log({ id });
-        // rerender(id);
         setValue(function (prev) { return prev + 2; });
     };
     useEffect(function () {
@@ -313,7 +303,6 @@ var Component = function (attributes) {
     ]));
 };
 var Button = function () {
-    var _a = useState(0), parent = _a[2];
     return jsxPragma('button', {onClick: function () { }}, ["Click ", parent]);
 };
 
@@ -322,8 +311,6 @@ var CreateDOM = function (rootId, rootFn) {
     if (tryGetRootNode) {
         tryGetRootNode === null || tryGetRootNode === void 0 ? void 0 : tryGetRootNode.appendChild(rootFn({}));
         createConnections(nodeGraph);
-        console.log(connections);
-        console.log(nodeOrder);
     }
     else {
         throw new Error("No Root node found with id: ".concat(rootId));

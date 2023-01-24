@@ -1,9 +1,11 @@
+import jsxFrag from './frag';
 import {
   currentId,
   hasRendered,
-  nodeOrder,
+  componentElements,
   incrementId,
-  setGlobalParent
+  setCurrentId,
+  resetCurrentStateIndex
 } from './renderer';
 import { Reactiv } from './types';
 
@@ -15,7 +17,8 @@ export const createElement = (
   return {
     fn,
     props,
-    el
+    el,
+    cache: []
   };
 };
 
@@ -36,6 +39,8 @@ function jsxPragma(
   const children = args.flatMap((c) => c);
 
   if (typeof type === 'function') {
+    resetCurrentStateIndex();
+
     if (!hasRendered) {
       const prevLayer = currentLayer;
       currentLayer++;
@@ -65,7 +70,7 @@ function jsxPragma(
       const [el, id] = orphan;
       if (filteredChildren.includes(el)) {
         const temp = new Set(componentOrphans);
-        nodeOrder[id].parentEl = element;
+        componentElements[id].parentEl = element;
         componentOrphans.delete(orphan);
       }
     });
@@ -113,25 +118,32 @@ const functionComponent = (
   if (currentId !== undefined) {
     if (hasRendered) {
       incrementId();
-      setGlobalParent(currentId);
       const componentId = currentId;
-      const res = type({ ...props, children: children });
-      componentOrphans.add([res, componentId]);
-      nodeOrder[componentId].element.el = res;
-      return res;
+      const el = type({ ...props, children: children });
+
+      componentOrphans.add([el, componentId]);
+
+      componentElements[componentId] = {
+        ...componentElements[componentId],
+        props,
+        el
+      };
+
+      return el;
     } else {
       const id = Math.floor(Math.random() * 1000).toString();
-      setGlobalParent(id.toString());
+      setCurrentId(id.toString());
 
       nodeGraph[currentLayer].push([id, currentColumn]);
-      const res = type(props);
-      nodeOrder[id] = {
-        id: id,
-        element: createElement(type, { ...props, children: children }, res),
-        parent: ''
-      };
-      if (res) componentOrphans.add([res, id]);
-      return res;
+      componentElements[id] = createElement(type, {
+        ...props,
+        children: children
+      });
+      const el = type(props);
+      componentElements[id].el = el;
+
+      if (el) componentOrphans.add([el, id]);
+      return el;
     }
   }
 };

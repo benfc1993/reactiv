@@ -5,6 +5,8 @@ export namespace Reactiv {
     fn: Component;
     props: object;
     el?: Node;
+    parentEl?: Node;
+    cache: any[];
   };
 }
 
