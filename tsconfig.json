@@ -14,8 +14,7 @@
     "isolatedModules": true,
     // "outDir": "./dist",
     "noEmit": true,
-    "jsx": "preserve",
-    "reactNamespace": "JSX"
+    "jsx": "preserve"
   },
   "include": ["src"],
   "exclude": ["node_modules"]

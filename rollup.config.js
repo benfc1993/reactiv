@@ -1,10 +1,10 @@
 import typescript from '@rollup/plugin-typescript';
-import jsx from 'rollup-plugin-jsx';
 import inject from '@rollup/plugin-inject';
 import serve from 'rollup-plugin-serve';
 import livereload from 'rollup-plugin-livereload';
 import { uglify } from 'rollup-plugin-uglify';
 import css from 'rollup-plugin-import-css';
+import { swc, defineRollupSwcOption } from 'rollup-plugin-swc3';
 import path from 'path';
 
 const devPlugins =
@@ -30,32 +30,40 @@ export default {
   },
   plugins: [
     css(),
-    [jsx({ factory: 'jsxPragma', passUnknownTagsToFactory: true })],
-    [
-      typescript({
-        target: 'es5',
-        lib: ['dom', 'dom.iterable', 'esnext'],
-        allowJs: true,
-        skipLibCheck: true,
-        esModuleInterop: true,
-        allowSyntheticDefaultImports: true,
-        strict: true,
-        forceConsistentCasingInFileNames: true,
-        module: 'esnext',
-        moduleResolution: 'node',
-        resolveJsonModule: true,
-        isolatedModules: true,
-        outDir: './dist',
-        noEmit: true,
-        jsx: 'preserve',
-        reactNamespace: 'JSX'
-      }),
-      inject({
-        jsxPragma: path.resolve(__dirname, 'src/Jsx/jsx.ts'),
-        jsxFrag: path.resolve(__dirname, 'src/Jsx/frag.ts')
-      }),
-      ...devPlugins
-    ]
+    typescript({
+      target: 'es5',
+      lib: ['dom', 'dom.iterable', 'esnext'],
+      allowJs: true,
+      skipLibCheck: true,
+      esModuleInterop: true,
+      allowSyntheticDefaultImports: true,
+      strict: true,
+      forceConsistentCasingInFileNames: true,
+      module: 'esnext',
+      moduleResolution: 'node',
+      resolveJsonModule: true,
+      isolatedModules: true,
+      outDir: './dist',
+      noEmit: true,
+      jsx: 'preserve'
+    }),
+    swc(
+      defineRollupSwcOption({
+        jsc: {
+          transform: {
+            react: {
+              pragma: 'jsxPragma',
+              pragmaFrag: 'jsxFrag'
+            }
+          }
+        }
+      })
+    ),
+    inject({
+      jsxPragma: path.resolve(__dirname, 'src/Jsx/jsx.ts'),
+      jsxFrag: path.resolve(__dirname, 'src/Jsx/frag.ts')
+    }),
+    ...devPlugins
   ],
   sourceMap: true
 };
