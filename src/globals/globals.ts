@@ -28,5 +28,8 @@ export const globals: Globals = {
   resetCurrentStateIndex() {
     this.currentStateIndex = 0;
   },
-  componentElements: {}
+  componentElements: {},
+  getCurrentComponentElement() {
+    return this.componentElements[this.currentId];
+  }
 };

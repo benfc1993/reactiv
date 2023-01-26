@@ -14,4 +14,5 @@ export interface Globals {
   componentElements: {
     [id: string]: Reactiv.Element;
   };
+  getCurrentComponentElement: () => Reactiv.Element;
 }

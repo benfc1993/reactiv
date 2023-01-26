@@ -4,60 +4,60 @@ import { useState } from '../hooks/useState';
 import { Reactiv } from '../types';
 import './styles.css';
 
-export const Text: Reactiv.Component<{ count: number }> = (attributes) => {
+export const Text: Reactiv.Component<{ count?: number }> = (attributes) => {
   const { count, children, ...restProps } = attributes;
-  const [value, setValue] = useState(count);
+  const [value, setValue] = useState(count || 0);
 
   const onClick = () => {
     setValue((prev) => prev + 1);
   };
 
   useEffect(() => {
-    console.log('here');
+    // console.log('here');
   }, [value]);
 
   return (
-    <div {...restProps}>
-      {children}
-      <p
-        style={{ height: '100px', width: '50px' }}
-        className={'test another class '}
-      >
-        Some text {attributes.count.toString()}
+    <>
+      <p {...restProps} onClick={onClick}>
+        Other text {count !== undefined ? count : value.toString()}
       </p>
-      <p onClick={onClick}>Other text {value.toString()}</p>
-    </div>
+    </>
   );
 };
-
-let testCount = 1;
 
 export const Component: Reactiv.Component<{ count: number }> = (
   attributes
 ): Node => {
   const { count, children, ...restProps } = attributes;
   const [value, setValue] = useState(0);
-  const ref = useRef<HTMLElement | null>(null);
+  const ref = useRef<number>(1);
 
   const onClick = () => {
-    testCount *= 2;
-    setValue((prev) => prev + 2);
-    ref.current?.classList.add('active');
+    ref.current = ref.current + 1;
+    // ref.current?.classList.add('active');
   };
 
   const onOtherClick = () => {
-    ref.current?.classList.remove('active');
+    setValue((prev) => prev + 2);
+    // ref.current?.classList.remove('active');
   };
 
-  useEffect(() => {});
+  useEffect(() => {}, [ref.current]);
 
   return (
-    <div {...restProps}>
-      {children}
-      <button onClick={onClick}>Set active</button>
-      <button onClick={onOtherClick}>Set inactive</button>
-      <p ref={ref}>{value}</p>
-    </div>
+    <>
+      {(ref.current < 2 || ref.current > 4) && (
+        <Text count={value} className="Text child" />
+      )}
+      <div {...restProps}>
+        <>
+          <p className="non-component" onClick={onClick}>
+            Test{Object.values(ref)}
+          </p>
+          <p onClick={onOtherClick}>other</p>
+        </>
+      </div>
+    </>
   );
 };
 

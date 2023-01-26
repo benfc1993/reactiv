@@ -1,15 +1,29 @@
-function jsxFrag(children: (string | string[] | HTMLElement[])[]) {
+import { globals } from '../globals/globals';
+import { componentElementIds } from './pragma';
+import '../utils/array.ts';
+import { Reactiv } from '../types';
+import { addFragmentChildren } from './utils';
+
+function jsxFrag(props: { children: any[] }) {
   try {
     const fragment = document.createDocumentFragment();
-    children.forEach((child) => {
-      if (typeof child === 'string') {
-      } else if (child instanceof Array) {
-        child.forEach((item) => fragment.appendChild(item as any));
-        fragment.appendChild(document.createTextNode(child as any));
-      } else {
-        fragment.appendChild(child);
-      }
-    });
+
+    const isComponent = componentElementIds.last() !== 'el';
+
+    let component: Reactiv.Element | null = null;
+
+    if (isComponent) {
+      component = globals.componentElements[componentElementIds.last()];
+      component.isFragment = true;
+      component.fragmentChildren = [];
+    }
+
+    addFragmentChildren(
+      fragment,
+      component,
+      props.children.flatMap((c) => c)
+    );
+
     return fragment;
   } catch (error) {
     console.log(error);
