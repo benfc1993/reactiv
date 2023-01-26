@@ -1,4 +1,6 @@
+import { componentElementIds } from '../Jsx/pragma';
 import { globals } from '../globals/globals';
+import { Reactiv } from '../types';
 
 export const connections: Record<string, string[]> = {};
 let rootNode: string = '';
@@ -39,16 +41,50 @@ export const rerender = (startFrom: string) => {
   globals.resetCurrentStateIndex();
   globals.currentNodeIndex = 0;
   globals.currentId = startFrom;
-  let parentElement: Node | HTMLElement | undefined =
-    globals.componentElements[startFrom].parentEl;
+  componentElementIds.splice(0);
+
+  const startComponent = { ...globals.getCurrentComponentElement() };
+  const startChildren = [...startComponent.fragmentChildren];
+  if (startComponent.isFragment)
+    globals.componentElements[startFrom].fragmentChildren = [];
+
+  let parentElement: Node | HTMLElement | undefined = getParentElement(
+    globals.componentElements[startFrom]
+  );
 
   let element = globals.componentElements[startFrom].el;
-  const res = globals.componentElements[startFrom].fn(
+
+  componentElementIds.push(startFrom);
+
+  const newElement = globals.componentElements[startFrom].fn(
     globals.componentElements[startFrom].props
   );
 
-  if (element) parentElement?.replaceChild(res, element);
-  globals.componentElements[startFrom].el = res;
+  const parentComponent =
+    globals.componentElements[globals.componentElements[startFrom].parentId];
+
+  if (startComponent.isFragment && parentComponent.isFragment) {
+    startChildren.forEach((child, idx) => {
+      const childToReplaceIndex =
+        parentComponent.fragmentChildren.indexOf(child);
+      if (childToReplaceIndex !== -1) {
+        parentComponent.fragmentChildren[childToReplaceIndex] =
+          globals.componentElements[startFrom].fragmentChildren[idx];
+      }
+    });
+  }
+
+  if (startComponent.isFragment) {
+    startChildren.forEach((child, idx) => {
+      parentElement?.replaceChild(
+        globals.componentElements[startFrom].fragmentChildren[idx],
+        child
+      );
+    });
+  } else {
+    if (element) parentElement?.replaceChild(newElement, element);
+    globals.componentElements[startFrom].el = newElement;
+  }
 };
 
 const createRenderOrder = (start: string) => {
@@ -66,5 +102,18 @@ const addIdsToOrder = (id: string, order: string[]) => {
     });
   } else {
     return;
+  }
+};
+
+const getParentElement = (component: Reactiv.Element) => {
+  if (component.isFragment) {
+    let parentElement = globals.componentElements[component.parentId];
+    while (parentElement.isFragment && parentElement !== undefined) {
+      parentElement = globals.componentElements[parentElement.parentId];
+    }
+    if (!parentElement) return undefined;
+    return parentElement.el;
+  } else {
+    return component.parentElement;
   }
 };

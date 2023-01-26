@@ -24,7 +24,7 @@ export default {
     format: 'es',
     dir: 'dist',
     globals: {
-      ['./src/Jsx/jsx.ts']: 'jsxPragma',
+      ['./src/Jsx/pragma.ts']: 'jsxPragma',
       ['./src/Jsx/frag.ts']: 'jsxFrag'
     }
   },
@@ -60,10 +60,9 @@ export default {
       })
     ),
     inject({
-      jsxPragma: path.resolve(__dirname, 'src/Jsx/jsx.ts'),
+      jsxPragma: path.resolve(__dirname, 'src/Jsx/pragma.ts'),
       jsxFrag: path.resolve(__dirname, 'src/Jsx/frag.ts')
     }),
     ...devPlugins
-  ],
-  sourceMap: true
+  ]
 };

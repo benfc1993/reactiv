@@ -1,4 +1,4 @@
-import { nodeGraph } from './Jsx/jsx';
+import { nodeGraph } from './Jsx/pragma';
 import { createConnections } from './render/renderer';
 import { Reactiv } from './types';
 

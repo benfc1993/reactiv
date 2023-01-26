@@ -5,7 +5,10 @@ export namespace Reactiv {
     fn: Component;
     props: object;
     el?: Node;
-    parentEl?: Node;
+    parentId: string;
+    parentElement?: Node;
+    isFragment: boolean;
+    fragmentChildren: Node[];
     cache: any[];
   };
 }
