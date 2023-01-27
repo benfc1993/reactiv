@@ -2,17 +2,19 @@ import { Globals } from './types';
 
 export const globals: Globals = {
   renderOrder: [],
-  currId: '0',
-  set currentId(value: string) {
-    this.currId = value;
+  parId: '0',
+  set parentId(value: string) {
+    this.parId = value;
   },
-  get currentId(): string {
-    return this.currId;
+  get parentId(): string {
+    return this.parId;
   },
   currentNodeIndex: 0,
+  get currentId(): string | null {
+    return this.renderOrder[this.currentNodeIndex] || null;
+  },
   incrementCurrentId() {
     this.currentNodeIndex += 1;
-    this.currentId = this.renderOrder[this.currentNodeIndex];
   },
   hasRend: false,
   set hasRendered(value: boolean) {
@@ -30,6 +32,6 @@ export const globals: Globals = {
   },
   componentElements: {},
   getCurrentComponentElement() {
-    return this.componentElements[this.currentId];
+    return this.componentElements[this.currentId!];
   }
 };

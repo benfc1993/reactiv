@@ -1,16 +1,23 @@
 import { Reactiv } from '../types';
 
 export const createComponentElement = (
-  parent: string,
+  nextHash: string,
   fn: Reactiv.Component,
   props: object,
+  layer: number,
+  column: number,
   el?: Node
 ): Reactiv.Element => {
   return {
-    parentId: parent,
+    parentId: '',
     fn,
     props,
     el,
+    nodeTree: {
+      layer,
+      column,
+      nextHash
+    },
     isFragment: false,
     fragmentChildren: [],
     cache: []

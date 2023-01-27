@@ -6,12 +6,19 @@ import { addChildren, handleProps } from './utils';
 
 let currentLayer = -1;
 let currentColumn = 0;
-
-export const nodeGraph: Record<number, [string, number][]> = {};
-const layers: number[] = [];
-
+let layers: number[] = [];
 let componentOrphans: Set<[Node, string]> = new Set();
-export const componentElementIds: (string | 'el')[] = [];
+export let nodeGraph: Record<number, [string, number][]> = {};
+export let componentElementIds: (string | 'el')[] = [];
+
+export const resetPragma = (startId: string, startColumn: number) => {
+  currentLayer = 0;
+  currentColumn = 0;
+  layers = Array.from({ length: startColumn }).fill(0) as number[];
+  componentOrphans = new Set();
+  nodeGraph = { 0: [[startId, -1]] };
+  componentElementIds = [startId];
+};
 
 function jsxPragma(
   type: string | Reactiv.Component,
@@ -19,7 +26,7 @@ function jsxPragma(
   ...args: any[]
 ) {
   const children = args.flatMap((c) => c);
-  //TODO: Reduce duplication here
+
   if (typeof type === 'function') {
     if (type.name === 'jsxFrag') return type({ ...props, children });
 
@@ -31,20 +38,17 @@ function jsxPragma(
 
     let element: Node | undefined;
 
-    if (!globals.hasRendered) {
-      const prevLayer = currentLayer;
-      currentLayer++;
-      currentColumn = layers.reduce((count, l) => {
-        if (l === prevLayer) count += 1;
-        return count;
-      }, -1);
+    const prevLayer = currentLayer;
+    currentLayer++;
+    currentColumn = layers.reduce((count, l) => {
+      if (l === prevLayer) count += 1;
+      return count;
+    }, -1);
 
-      layers.push(currentLayer);
-      element = functionComponent(type, props, children);
-      currentLayer = prevLayer;
-    } else {
-      element = functionComponent(type, props, children);
-    }
+    layers.push(currentLayer);
+    element = functionComponent(type, props, children);
+    currentLayer = prevLayer;
+
     componentElementIds.pop();
     if (isFragComponent && element)
       globals.componentElements[
@@ -87,43 +91,52 @@ const functionComponent = (
   if (!(currentLayer in nodeGraph)) {
     nodeGraph[currentLayer] = [];
   }
-  if (globals.currentId !== undefined) {
-    const propsWithChildren = { ...props, children: children };
-    if (globals.hasRendered) {
-      globals.incrementCurrentId();
-      const componentId = globals.currentId;
-      componentElementIds.push(componentId);
-      const el = type(propsWithChildren);
 
-      componentOrphans.add([el, componentId]);
+  globals.incrementCurrentId();
 
-      globals.componentElements[componentId] = {
-        ...globals.componentElements[componentId],
-        props: propsWithChildren,
-        el
-      };
+  const propsWithChildren = { ...props, children: children };
 
-      return el;
-    } else {
-      const id = CreateUUID();
-      const parentId = globals.currentId;
-      globals.currentId = id;
-      componentElementIds.push(id);
-      nodeGraph[currentLayer].push([id, currentColumn]);
+  const column = layers.reduce((count, l) => {
+    if (l === currentLayer) count += 1;
+    return count;
+  }, -1);
 
-      globals.componentElements[id] = createComponentElement(
-        parentId,
-        type,
-        propsWithChildren
-      );
-      const el = type(propsWithChildren);
+  const id = CreateUUID(type.name, globals?.currentId, column, currentLayer);
 
-      globals.componentElements[id].el = el;
-
-      if (el) componentOrphans.add([el, id]);
-      return el;
-    }
+  const prevComponent = globals.currentId
+    ? globals.componentElements[globals.currentId]
+    : [];
+  if (
+    !globals.getCurrentComponentElement()?.nodeTree.nextHash ||
+    id !== globals.getCurrentComponentElement()?.nodeTree.nextHash
+  ) {
   }
+
+  const nextHash = CreateUUID(type.name, id, column, currentLayer);
+
+  if (globals?.currentId) delete globals.componentElements[globals?.currentId];
+
+  globals.parentId = id;
+  componentElementIds.push(id);
+  nodeGraph[currentLayer].push([id, currentColumn]);
+
+  globals.componentElements[id] = {
+    ...createComponentElement(
+      nextHash,
+      type,
+      propsWithChildren,
+      currentLayer,
+      column
+    ),
+    ...prevComponent
+  };
+  const el = type(propsWithChildren);
+
+  globals.componentElements[id].el = el;
+
+  if (el) componentOrphans.add([el, id]);
+
+  return el;
 };
 
 export default jsxPragma;

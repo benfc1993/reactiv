@@ -10,6 +10,11 @@ export namespace Reactiv {
     isFragment: boolean;
     fragmentChildren: Node[];
     cache: any[];
+    nodeTree: {
+      layer: number;
+      column: number;
+      nextHash: string;
+    };
   };
 }
 

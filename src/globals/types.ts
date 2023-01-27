@@ -4,10 +4,11 @@ export interface Globals {
   hasRendered: boolean;
   hasRend: boolean;
   renderOrder: string[];
-  currId: string;
-  currentId: string;
+  parId: string;
+  parentId: string;
   currentStateIndex: number;
   currentNodeIndex: number;
+  currentId: string | null;
   incrementCurrentId: () => void;
   incrementCurrentStateIndex: () => void;
   resetCurrentStateIndex: () => void;

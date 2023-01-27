@@ -4,7 +4,7 @@ export const useEffect = (
   callback: () => void | (() => void),
   dependencies?: unknown[]
 ) => {
-  const componentId = globals.currentId;
+  const componentId = globals.parentId;
   const stateIndex = globals.currentStateIndex;
   globals.incrementCurrentStateIndex();
 

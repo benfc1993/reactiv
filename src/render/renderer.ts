@@ -1,6 +1,7 @@
-import { componentElementIds } from '../Jsx/pragma';
+import { componentElementIds, nodeGraph, resetPragma } from '../Jsx/pragma';
 import { globals } from '../globals/globals';
 import { Reactiv } from '../types';
+import '../utils/array';
 
 export const connections: Record<string, string[]> = {};
 let rootNode: string = '';
@@ -12,7 +13,7 @@ export const createConnections = (
 
   nodeGraphArray.forEach((layerEntries) => {
     layerEntries.forEach((entry) => {
-      const [id, column] = entry;
+      const [id] = entry;
       connections[id] = [];
     });
   });
@@ -23,7 +24,8 @@ export const createConnections = (
     entries.forEach(([id, column]) => {
       if (column !== -1) {
         const parentId = nodeGraphArray[i - 1][column][0];
-        connections[parentId].push(id.toString());
+        connections[parentId].push(id);
+        globals.componentElements[id].parentId = parentId;
       } else {
         rootNode = id.toString();
       }
@@ -33,35 +35,37 @@ export const createConnections = (
 
 export let renderIds: number[] = [];
 
-export const rerender = (startFrom: string) => {
+export const rerender = (startId: string) => {
   globals.hasRendered = true;
 
-  globals.renderOrder = createRenderOrder(startFrom);
-
+  globals.renderOrder = createRenderOrder(startId);
   globals.resetCurrentStateIndex();
   globals.currentNodeIndex = 0;
-  globals.currentId = startFrom;
-  componentElementIds.splice(0);
+  globals.parentId = startId;
 
   const startComponent = { ...globals.getCurrentComponentElement() };
   const startChildren = [...startComponent.fragmentChildren];
+
   if (startComponent.isFragment)
-    globals.componentElements[startFrom].fragmentChildren = [];
+    globals.componentElements[startId].fragmentChildren = [];
 
   let parentElement: Node | HTMLElement | undefined = getParentElement(
-    globals.componentElements[startFrom]
+    globals.componentElements[startId]
   );
 
-  let element = globals.componentElements[startFrom].el;
+  let element = globals.componentElements[startId].el;
 
-  componentElementIds.push(startFrom);
+  componentElementIds.push(startId);
 
-  const newElement = globals.componentElements[startFrom].fn(
-    globals.componentElements[startFrom].props
+  resetPragma(startId, startComponent.nodeTree.column);
+  const newElement = globals.componentElements[startId].fn(
+    globals.componentElements[startId].props
   );
+
+  createConnections(nodeGraph);
 
   const parentComponent =
-    globals.componentElements[globals.componentElements[startFrom].parentId];
+    globals.componentElements[globals.componentElements[startId].parentId];
 
   if (startComponent.isFragment && parentComponent.isFragment) {
     startChildren.forEach((child, idx) => {
@@ -69,7 +73,7 @@ export const rerender = (startFrom: string) => {
         parentComponent.fragmentChildren.indexOf(child);
       if (childToReplaceIndex !== -1) {
         parentComponent.fragmentChildren[childToReplaceIndex] =
-          globals.componentElements[startFrom].fragmentChildren[idx];
+          globals.componentElements[startId].fragmentChildren[idx];
       }
     });
   }
@@ -77,24 +81,41 @@ export const rerender = (startFrom: string) => {
   if (startComponent.isFragment) {
     startChildren.forEach((child, idx) => {
       parentElement?.replaceChild(
-        globals.componentElements[startFrom].fragmentChildren[idx],
+        globals.componentElements[startId].fragmentChildren[idx],
         child
       );
     });
   } else {
     if (element) parentElement?.replaceChild(newElement, element);
-    globals.componentElements[startFrom].el = newElement;
+    globals.componentElements[startId].el = newElement;
+  }
+  for (const id of globals.renderOrder) {
+    if (id === startId) continue;
+    delete globals.componentElements[id];
   }
 };
 
 const createRenderOrder = (start: string) => {
   const order: string[] = [start];
   addIdsToOrder(start, order);
+  for (const id of order) {
+    if (id === start) continue;
+    delete connections[id];
+    Object.entries(connections).forEach(([connectionId, connection]) => {
+      const index = connection.indexOf(id.toString());
+      connections[connectionId] = connection.removeAt(index);
+    });
+  }
   return order;
 };
 
-const addIdsToOrder = (id: string, order: string[]) => {
+const addIdsToOrder = (
+  id: string,
+
+  order: string[]
+) => {
   const ids = connections[id];
+
   if (ids.length > 0) {
     ids.forEach((id) => {
       order.push(id);

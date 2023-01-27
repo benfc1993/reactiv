@@ -1,12 +1,13 @@
 import { globals } from '../globals/globals';
 import { rerender } from '../render/renderer';
+import { benchmark } from '../utils/benchmark';
 
 type SetValue<TState> = (state: TState | ((prev: TState) => TState)) => void;
 
 export const useState = <TState>(
   initialValue: TState
 ): [TState, SetValue<TState>] => {
-  const componentId = globals.currentId;
+  const componentId = globals.parentId;
   const stateIndex = globals.currentStateIndex;
   globals.incrementCurrentStateIndex();
 
@@ -20,7 +21,7 @@ export const useState = <TState>(
       cache[stateIndex] = state;
     }
 
-    rerender(componentId);
+    benchmark(() => rerender(componentId), 'rerender');
   };
   const value = cache[stateIndex] as TState;
   return [value, setValue];

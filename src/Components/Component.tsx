@@ -1,3 +1,4 @@
+import { globals } from '../globals/globals';
 import { useEffect } from '../hooks/useEffect';
 import { useRef } from '../hooks/useRef';
 import { useState } from '../hooks/useState';
@@ -50,6 +51,10 @@ export const Component: Reactiv.Component<{ count: number }> = (
         <Text count={value} className="Text child" />
       )}
       <div {...restProps}>
+        <p>{globals.componentElements[globals.parentId]?.nodeTree.layer}</p>
+        <p>{globals.componentElements[globals.parentId]?.nodeTree.column}</p>
+        <p>{globals.parentId}</p>
+        <p>{globals.componentElements[globals.parentId]?.nodeTree.nextHash}</p>
         <>
           <p className="non-component" onClick={onClick}>
             Test{Object.values(ref)}

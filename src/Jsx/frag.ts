@@ -8,7 +8,8 @@ function jsxFrag(props: { children: any[] }) {
   try {
     const fragment = document.createDocumentFragment();
 
-    const isComponent = componentElementIds.last() !== 'el';
+    const isComponent =
+      componentElementIds.length > 0 && componentElementIds.last() !== 'el';
 
     let component: Reactiv.Element | null = null;
 

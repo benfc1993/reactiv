@@ -1,8 +1,8 @@
 import { globals } from '../globals/globals';
 
 export const useRef = <TValue>(initialValue: TValue): { current: TValue } => {
-  const { currentId, currentStateIndex } = globals;
-  const { cache } = globals.componentElements[currentId];
+  const { parentId, currentStateIndex } = globals;
+  const { cache } = globals.componentElements[parentId];
   if (!cache[currentStateIndex]) {
     cache.push({ current: initialValue });
   }
