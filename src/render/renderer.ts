@@ -44,8 +44,12 @@ export const rerender = (startId: string) => {
   globals.parentId = startId;
 
   const startComponent = { ...globals.getCurrentComponentElement() };
+  const nextComponentId = startComponent.nodeTree.nextHash;
+  console.log(startId);
+  console.log(globals.componentElements);
+  console.log(nextComponentId);
   const startChildren = [...startComponent.fragmentChildren];
-
+  console.log(startComponent);
   if (startComponent.isFragment)
     globals.componentElements[startId].fragmentChildren = [];
 

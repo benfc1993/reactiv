@@ -7,7 +7,6 @@ import { addFragmentChildren } from './utils';
 function jsxFrag(props: { children: any[] }) {
   try {
     const fragment = document.createDocumentFragment();
-
     const isComponent =
       componentElementIds.length > 0 && componentElementIds.last() !== 'el';
 
@@ -15,7 +14,6 @@ function jsxFrag(props: { children: any[] }) {
 
     if (isComponent) {
       component = globals.componentElements[componentElementIds.last()];
-      component.isFragment = true;
       component.fragmentChildren = [];
     }
 

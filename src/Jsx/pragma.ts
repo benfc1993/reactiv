@@ -2,6 +2,7 @@ import { globals } from '../globals/globals';
 import { Reactiv } from '../types';
 import { CreateUUID } from '../utils/createUUID';
 import { createComponentElement } from './createComponentElement';
+import jsxFrag from './frag';
 import { addChildren, handleProps } from './utils';
 
 let currentLayer = -1;
@@ -26,15 +27,10 @@ function jsxPragma(
   ...args: any[]
 ) {
   const children = args.flatMap((c) => c);
-
   if (typeof type === 'function') {
     if (type.name === 'jsxFrag') return type({ ...props, children });
 
     globals.resetCurrentStateIndex();
-    const isFragComponent =
-      componentElementIds.length > 0 &&
-      componentElementIds.last() !== 'el' &&
-      globals.componentElements[componentElementIds.last()]?.isFragment;
 
     let element: Node | undefined;
 
@@ -49,13 +45,16 @@ function jsxPragma(
     element = functionComponent(type, props, children);
     currentLayer = prevLayer;
 
+    if (element && element.nodeType === 11) {
+      globals.componentElements[componentElementIds.last()].isFragment = true;
+    } else {
+      globals.componentElements[componentElementIds.last()].fragmentChildren =
+        [];
+    }
     componentElementIds.pop();
-    if (isFragComponent && element)
-      globals.componentElements[
-        componentElementIds.last()
-      ].fragmentChildren.push(element);
     return element;
   }
+
   componentElementIds.push('el');
 
   const element = document.createElement(type as string);

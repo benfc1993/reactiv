@@ -18,11 +18,11 @@ export const Text: Reactiv.Component<{ count?: number }> = (attributes) => {
   }, [value]);
 
   return (
-    <>
+    <div>
       <p {...restProps} onClick={onClick}>
         Other text {count !== undefined ? count : value.toString()}
       </p>
-    </>
+    </div>
   );
 };
 
@@ -46,11 +46,14 @@ export const Component: Reactiv.Component<{ count: number }> = (
   useEffect(() => {}, [ref.current]);
 
   return (
-    <>
+    <div>
       {(ref.current < 2 || ref.current > 4) && (
         <Text count={value} className="Text child" />
       )}
       <div {...restProps}>
+        {(ref.current < 2 || ref.current > 4) && (
+          <Text count={value} className="Text child" />
+        )}
         <p>{globals.componentElements[globals.parentId]?.nodeTree.layer}</p>
         <p>{globals.componentElements[globals.parentId]?.nodeTree.column}</p>
         <p>{globals.parentId}</p>
@@ -62,7 +65,7 @@ export const Component: Reactiv.Component<{ count: number }> = (
           <p onClick={onOtherClick}>other</p>
         </>
       </div>
-    </>
+    </div>
   );
 };
 
