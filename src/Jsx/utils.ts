@@ -1,4 +1,6 @@
+import { TreeElement, currentTreeElement } from '../CreateDOM';
 import { Reactiv } from '../types';
+import { stack } from './pragma';
 
 export const handleProps = (
   element: HTMLElement,
@@ -23,19 +25,31 @@ export const handleProps = (
 };
 
 export const addChildren = (element: Node, children: any[]) => {
+  console.log(currentTreeElement);
+  let lastSibling: TreeElement | null = null;
   children
     .flatMap((c) => c)
     .forEach((child) => {
+      console.log(lastSibling);
       if (child === undefined) return;
       if (typeof child === 'boolean' && !child) {
         const childEl = document.createTextNode('');
+
+        lastSibling = reconcileChild(childEl, lastSibling);
+
         element.appendChild(childEl);
       } else if (typeof child === 'string' || typeof child === 'number') {
         const childEl = document.createTextNode(child.toString());
+
+        lastSibling = reconcileChild(childEl, lastSibling);
+
         element.appendChild(childEl);
       } else if (typeof child === 'function') {
+        console.log('testing');
       } else {
-        element.appendChild(child);
+        const childEl = element.appendChild(child);
+
+        lastSibling = reconcileChild(childEl, lastSibling);
       }
     });
 };
@@ -79,3 +93,15 @@ export const parseStyles = (styles: Record<string, string>) => {
     .map(([key, value]) => `${key}: ${value};`)
     .join(' ');
 };
+function reconcileChild(childEl: Text, lastSibling: TreeElement | null) {
+  let treeElement = stack.find((item) => item.element === childEl);
+  if (!treeElement) return;
+  treeElement = {
+    ...treeElement,
+    owner: currentTreeElement,
+    sibling: lastSibling
+  };
+  lastSibling = treeElement;
+  currentTreeElement.child = treeElement;
+  return treeElement;
+}

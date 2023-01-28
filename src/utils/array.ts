@@ -2,6 +2,7 @@ declare global {
   export interface Array<T> {
     last(): T;
     removeAt(index: number): Array<T>;
+    remove(item: T): Array<T>;
     insert(value: T, index: number): Array<T>;
   }
 }
@@ -19,6 +20,11 @@ Array.prototype.insert = function <T>(value: T, index: number): Array<T> {
   const start = this.slice(0, index);
   const end = this.slice(index + 1);
   return [...start, value, ...end];
+};
+
+Array.prototype.remove = function <T>(item: T): Array<T> {
+  const index = this.indexOf(item);
+  return this.removeAt(index);
 };
 
 Array.prototype.removeAt = function <T>(index: number): Array<T> {

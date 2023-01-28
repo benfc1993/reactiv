@@ -1,14 +1,11 @@
 import { globals } from '../globals/globals';
+import { initialiseHook } from './initialiseHook';
 
 export const useEffect = (
   callback: () => void | (() => void),
   dependencies?: unknown[]
 ) => {
-  const componentId = globals.parentId;
-  const stateIndex = globals.currentStateIndex;
-  globals.incrementCurrentStateIndex();
-
-  const { cache } = globals.componentElements[componentId];
+  const { stateIndex, cache } = initialiseHook();
 
   if (!cache[stateIndex]) {
     cache[stateIndex] = { dependencies: undefined, cleanup: null };

@@ -1,9 +1,10 @@
 export namespace Reactiv {
   export type BaseProps = { children?: any[] } & Attributes;
-  export type Component<T = {}, K = T & BaseProps> = (props: K) => Node;
+  export type Component<T = {}> = (props: T & BaseProps) => Node;
   export type Element = {
+    id: string;
     fn: Component;
-    props: object;
+    props: Record<string, any>;
     el?: Node;
     parentId: string;
     parentElement?: Node;

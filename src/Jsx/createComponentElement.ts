@@ -1,7 +1,9 @@
 import { Reactiv } from '../types';
 
 export const createComponentElement = (
+  id: string,
   nextHash: string,
+  parentId: string,
   fn: Reactiv.Component,
   props: object,
   layer: number,
@@ -9,7 +11,8 @@ export const createComponentElement = (
   el?: Node
 ): Reactiv.Element => {
   return {
-    parentId: '',
+    id,
+    parentId,
     fn,
     props,
     el,

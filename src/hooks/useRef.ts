@@ -1,12 +1,12 @@
 import { globals } from '../globals/globals';
+import { initialiseHook } from './initialiseHook';
 
 export const useRef = <TValue>(initialValue: TValue): { current: TValue } => {
-  const { parentId, currentStateIndex } = globals;
-  const { cache } = globals.componentElements[parentId];
-  if (!cache[currentStateIndex]) {
+  const { stateIndex, cache } = initialiseHook();
+
+  if (!cache[stateIndex]) {
     cache.push({ current: initialValue });
   }
-  globals.incrementCurrentStateIndex();
 
-  return cache[currentStateIndex];
+  return cache[stateIndex];
 };

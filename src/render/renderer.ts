@@ -1,15 +1,18 @@
+import { rootNode } from '../CreateDOM';
 import { componentElementIds, nodeGraph, resetPragma } from '../Jsx/pragma';
 import { globals } from '../globals/globals';
 import { Reactiv } from '../types';
 import '../utils/array';
 
 export const connections: Record<string, string[]> = {};
-let rootNode: string = '';
+export let rootComponentElementId: string = '';
 
 export const createConnections = (
   nodeGraph: Record<number, [string, number][]>
 ) => {
   const nodeGraphArray = Object.values(nodeGraph);
+
+  console.log(globals.componentElements);
 
   nodeGraphArray.forEach((layerEntries) => {
     layerEntries.forEach((entry) => {
@@ -27,7 +30,7 @@ export const createConnections = (
         connections[parentId].push(id);
         globals.componentElements[id].parentId = parentId;
       } else {
-        rootNode = id.toString();
+        rootComponentElementId = id;
       }
     });
   }
@@ -45,17 +48,15 @@ export const rerender = (startId: string) => {
 
   const startComponent = { ...globals.getCurrentComponentElement() };
   const nextComponentId = startComponent.nodeTree.nextHash;
-  console.log(startId);
-  console.log(globals.componentElements);
-  console.log(nextComponentId);
   const startChildren = [...startComponent.fragmentChildren];
-  console.log(startComponent);
+
   if (startComponent.isFragment)
     globals.componentElements[startId].fragmentChildren = [];
 
   let parentElement: Node | HTMLElement | undefined = getParentElement(
     globals.componentElements[startId]
   );
+  console.log('HERE: ', parentElement);
 
   let element = globals.componentElements[startId].el;
 
@@ -90,7 +91,11 @@ export const rerender = (startId: string) => {
       );
     });
   } else {
-    if (element) parentElement?.replaceChild(newElement, element);
+    if (element) {
+      if (parentElement?.hasChildNodes())
+        parentElement?.replaceChild(newElement, element);
+      else parentElement?.appendChild(newElement);
+    }
     globals.componentElements[startId].el = newElement;
   }
   for (const id of globals.renderOrder) {
@@ -131,14 +136,31 @@ const addIdsToOrder = (
 };
 
 const getParentElement = (component: Reactiv.Element) => {
+  if (component.id === rootComponentElementId) return rootNode;
+  let parentElement = globals.componentElements[component.parentId];
   if (component.isFragment) {
-    let parentElement = globals.componentElements[component.parentId];
     while (parentElement.isFragment && parentElement !== undefined) {
+      if (parentElement.id === rootComponentElementId) return rootNode;
       parentElement = globals.componentElements[parentElement.parentId];
     }
     if (!parentElement) return undefined;
-    return parentElement.el;
-  } else {
-    return component.parentElement;
   }
+  return parentElement.el;
+};
+
+export const getNearestComponentByType = <T extends Reactiv.Component<any>>(
+  componetId: string,
+  component: T
+): Reactiv.Element | undefined => {
+  let currentParent =
+    globals.componentElements[globals.componentElements[componetId].parentId];
+  while (currentParent !== undefined) {
+    if (currentParent.fn === component) return currentParent;
+    currentParent =
+      globals.componentElements[
+        globals.componentElements[currentParent.id].parentId
+      ];
+  }
+
+  return undefined;
 };

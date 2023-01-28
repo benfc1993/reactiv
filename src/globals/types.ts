@@ -4,7 +4,6 @@ export interface Globals {
   hasRendered: boolean;
   hasRend: boolean;
   renderOrder: string[];
-  parId: string;
   parentId: string;
   currentStateIndex: number;
   currentNodeIndex: number;

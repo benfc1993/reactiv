@@ -2,13 +2,7 @@ import { Globals } from './types';
 
 export const globals: Globals = {
   renderOrder: [],
-  parId: '0',
-  set parentId(value: string) {
-    this.parId = value;
-  },
-  get parentId(): string {
-    return this.parId;
-  },
+  parentId: '0',
   currentNodeIndex: 0,
   get currentId(): string | null {
     return this.renderOrder[this.currentNodeIndex] || null;
