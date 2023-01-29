@@ -1,4 +1,4 @@
-// import { globals } from '../globals/globals';
+// import { globals } from '../globals';
 // import { initialiseHook } from '../hooks/initialiseHook';
 // import { getNearestComponentByType } from '../render/renderer';
 // import { Reactiv } from '../types';

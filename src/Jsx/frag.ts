@@ -1,29 +1,27 @@
-import { globals } from '../globals/globals';
-import { componentElementIds } from './pragma';
+import { TreeElement } from '../globals';
 import '../utils/array.ts';
-import { Reactiv } from '../types';
-import { addFragmentChildren } from './utils';
+import { addChildren, addTreeChildren } from './utils';
+import { currentTreeElement, stack } from '../CreateDOM';
 
 function jsxFrag(props: { children: any[] }) {
   try {
-    const fragment = document.createDocumentFragment();
-    const isComponent =
-      componentElementIds.length > 0 && componentElementIds.last() !== 'el';
+    const element = document.createDocumentFragment();
 
-    let component: Reactiv.Element | null = null;
+    const treeElement: TreeElement = {
+      type: null,
+      child: null,
+      sibling: null,
+      owner: currentTreeElement,
+      element,
+      props
+    };
 
-    if (isComponent) {
-      component = globals.componentElements[componentElementIds.last()];
-      component.fragmentChildren = [];
-    }
+    addChildren(element, props.children);
+    addTreeChildren(props.children, treeElement);
 
-    addFragmentChildren(
-      fragment,
-      component,
-      props.children.flatMap((c) => c)
-    );
+    stack.unshift(treeElement);
 
-    return fragment;
+    return element;
   } catch (error) {
     console.log(error);
   }

@@ -1,6 +1,7 @@
 // import { TestContext } from '../App';
 // import { useContext } from '../Context/createContext';
-import { globals } from '../globals/globals';
+import { TestContext } from '../App';
+import { globals } from '../globals';
 import { useEffect } from '../hooks/useEffect';
 import { useRef } from '../hooks/useRef';
 import { useState } from '../hooks/useState';
@@ -20,8 +21,11 @@ export const Text: Reactiv.Component<{ count: number }> = (attributes) => {
   // }, [value]);
 
   return (
-    <div>
-      <p {...restProps}>Other text</p>
+    <div className="TextTop">
+      <div>
+        <p {...restProps}>Other text</p>
+        <Button />
+      </div>
     </div>
   );
 };
@@ -65,5 +69,9 @@ export const Component: Reactiv.Component<{ count: number }> = (
 };
 
 export const Button = () => {
-  return <button onClick={() => {}}>Click kid</button>;
+  return (
+    <>
+      <button onClick={() => {}}>Click kid</button>
+    </>
+  );
 };

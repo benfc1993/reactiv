@@ -1,18 +1,14 @@
 import { Reactiv } from '../types';
 
+export type TreeElement = {
+  type: any;
+  child: TreeElement | null;
+  sibling: TreeElement | null;
+  owner: TreeElement | null;
+  element: Node | null;
+  props: any | null;
+};
+
 export interface Globals {
-  hasRendered: boolean;
-  hasRend: boolean;
-  renderOrder: string[];
-  parentId: string;
-  currentStateIndex: number;
-  currentNodeIndex: number;
-  currentId: string | null;
-  incrementCurrentId: () => void;
-  incrementCurrentStateIndex: () => void;
-  resetCurrentStateIndex: () => void;
-  componentElements: {
-    [id: string]: Reactiv.Element;
-  };
-  getCurrentComponentElement: () => Reactiv.Element;
+  tree: TreeElement;
 }

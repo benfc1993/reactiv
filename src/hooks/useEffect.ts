@@ -1,4 +1,4 @@
-import { globals } from '../globals/globals';
+import { globals } from '../globals';
 import { initialiseHook } from './initialiseHook';
 
 export const useEffect = (
