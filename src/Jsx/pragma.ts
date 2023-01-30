@@ -1,11 +1,12 @@
-import {
-  currentTreeElement,
-  currentComponentElement,
-  stack,
-  queue
-} from '../CreateDOM';
-import { TreeElement } from '../globals';
+import { TreeElement, globals } from '../globals';
 import { Reactiv } from '../types';
+import {
+  currentComponentElement,
+  currentTreeElement,
+  queue,
+  stack
+} from '../virtualDom/createTree';
+import { createTreeElement } from './createTreeElement';
 import { addChildren, addTreeChildren, handleProps } from './utils';
 
 function jsxPragma(
@@ -21,18 +22,17 @@ function jsxPragma(
 
     return;
   }
+  console.log(currentTreeElement.type);
 
   const element = document.createElement(type as string);
   handleProps(element, props);
 
-  const treeElement: TreeElement = {
+  const treeElement: TreeElement = createTreeElement({
     type,
-    child: null,
-    sibling: null,
     owner: currentTreeElement,
     element,
     props
-  };
+  });
 
   addChildren(element, children);
   addTreeChildren(children, treeElement);
@@ -47,14 +47,11 @@ const functionComponent = (
   props: Reactiv.BaseProps,
   children: any[]
 ) => {
-  const newTreeElement: TreeElement = {
+  const newTreeElement: TreeElement = createTreeElement({
     type,
-    child: null,
-    sibling: null,
     owner: currentComponentElement,
-    element: null,
     props: { ...props, children }
-  };
+  });
 
   currentComponentElement.child = newTreeElement;
   const functionChildren = children.filter(

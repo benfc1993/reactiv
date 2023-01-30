@@ -1,5 +1,5 @@
-import { stack } from '../CreateDOM';
 import { TreeElement } from '../globals';
+import { stack } from '../virtualDom/createTree';
 
 export const handleProps = (
   element: HTMLElement,
@@ -31,21 +31,17 @@ export const addChildren = (element: Node, children: any[]) => {
       if (typeof child === 'boolean' && !child) {
         const childEl = document.createTextNode('');
 
-        element.appendChild(childEl);
+        // element.appendChild(childEl);
       } else if (typeof child === 'string' || typeof child === 'number') {
         const childEl = document.createTextNode(child.toString());
-
         element.appendChild(childEl);
-      } else if (typeof child === 'function') {
-      } else {
-        element.appendChild(child);
       }
     });
 };
 
 export function addTreeChildren(children: any[], treeElement: TreeElement) {
   const filteredChildren = children.filter(
-    (child) => typeof child !== 'string'
+    (child) => typeof child !== 'string' && typeof child !== 'number'
   );
 
   for (let i = 0; i < filteredChildren.length; i++) {

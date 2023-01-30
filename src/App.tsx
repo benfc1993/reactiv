@@ -1,41 +1,35 @@
 import { Component, Text } from './Components/Component';
-// import { createContext } from './Context/createContext';
+import { createContext } from './Context/createContext';
+import { SetValue, useState } from './hooks/useState';
 import { Reactiv } from './types';
 
-// export const TestContext = createContext({ a: 1, b: 2 });
-const TestingPass = () => {
-  const context: any = {
-    value: 0,
-    Parent: null
-  };
-  context.Parent = (props: { initValue: number; children?: any }) => {
-    const { initValue, children } = props;
-    context.value = initValue;
-    return <div className="Parent">{children}</div>;
-  };
-  return context;
-};
+export const TestContext = createContext<[number, SetValue<number>]>()!;
 
-export const TestContext = TestingPass();
+const useStore = (initialValue: number): [number, SetValue<number>] => {
+  const [value, setValue] = useState(initialValue);
+  return [value, setValue];
+};
 
 export const App: Reactiv.Component = (): Node => {
   return (
     <div className="App">
-      <TestContext.Parent initValue={10}>
+      <TestContext.Provider value={useStore(27)}>
         <div className="new-element">
           <Text count={2} />
         </div>
         <div>
           <div>
-            <div></div>
+            <div>
+              <Component count={4} />
+            </div>
           </div>
         </div>
-      </TestContext.Parent>
-      <div className="sibling-here">
-        <>
-          <Text count={3} />
-        </>
-      </div>
+        <div className="sibling-here">
+          <>
+            <Text count={3} />
+          </>
+        </div>
+      </TestContext.Provider>
     </div>
   );
 };

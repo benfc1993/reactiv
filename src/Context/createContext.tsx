@@ -1,50 +1,51 @@
-// import { globals } from '../globals';
-// import { initialiseHook } from '../hooks/initialiseHook';
-// import { getNearestComponentByType } from '../render/renderer';
-// import { Reactiv } from '../types';
+import { TreeElement, globals } from '../globals';
+import { initialiseHook } from '../hooks/initialiseHook';
+import { getNearestElementByType } from '../virtualDom/getNearestElementByType';
+import { Attributes, Reactiv } from '../types';
+import { loudLog } from '../utils/loudLog';
 
-// type ContextProvider<T> = Reactiv.Component<{ value: T }>;
+type ContextProvider<T> = Reactiv.Component<{ value: T }>;
 
-// type Context<T> = {
-//   Provider: ContextProvider<T>;
-// };
+type Context<T> = {
+  Provider: ContextProvider<T>;
+};
 
-// export const createContext = <T,>(intialValue: T): Context<T> => {
-//   const Provider: Reactiv.Component<{ value: T }> = (
-//     props = { value: intialValue }
-//   ) => {
-//     return <>{props.children}</>;
-//   };
-//   return {
-//     Provider
-//   };
-// };
+export const createContext = <T,>(intialValue?: T): Context<T> => {
+  const Provider: Reactiv.Component<{ value: T }> = (props) => {
+    if (intialValue)
+      props.value =
+        typeof intialValue === 'function' ? intialValue() : intialValue;
+    return <>{props.children}</>;
+  };
 
-// type ContextCache<T> = {
-//   contextElementId: string;
-//   nextId: string;
-//   value: T;
-// };
+  return {
+    Provider
+  };
+};
 
-// export const useContext = <T,>(Context: Context<T>): T => {
-//   const { stateIndex, componentId, cache } = initialiseHook<ContextCache<T>>();
-//   if (globals.componentElements[componentId].parentId === '') {
-//     cache[stateIndex] = Context.Provider;
-//     return null;
-//   }
-//   let contextElement;
-//   if (!cache[stateIndex]) {
-//     contextElement = getNearestComponentByType(componentId, Context.Provider);
-//   } else {
-//     contextElement =
-//       globals.componentElements[cache[stateIndex].contextElementId];
-//   }
+type ContextCache<T> = {
+  treeElement: TreeElement | null;
+  value: T;
+};
 
-//   cache[stateIndex] = {
-//     contextElementId: contextElement!.id,
-//     nextId: contextElement!.nodeTree.nextHash,
-//     value: contextElement!.props.value
-//   };
+export const useContext = <T,>(Context: Context<T>): T => {
+  const { treeElement, cacheIndex, cache } = initialiseHook<ContextCache<T>>();
+  let contextElement;
+  if (!cache[cacheIndex]) {
+    contextElement = getNearestElementByType(treeElement, Context.Provider);
+    loudLog('getNearestElement', treeElement);
+  } else {
+    contextElement = cache[cacheIndex].treeElement;
+  }
+  if (contextElement === null)
+    throw new Error(
+      "Component must be child of Target Provider to use 'useContext'"
+    );
 
-//   return cache[stateIndex].value;
-// };
+  cache[cacheIndex] = {
+    treeElement: contextElement,
+    value: contextElement!.props.value
+  };
+
+  return cache[cacheIndex].value;
+};

@@ -1,20 +1,19 @@
 import { TreeElement } from '../globals';
 import '../utils/array.ts';
 import { addChildren, addTreeChildren } from './utils';
-import { currentTreeElement, stack } from '../CreateDOM';
+import { createTreeElement } from './createTreeElement';
+import { currentTreeElement, stack } from '../virtualDom/createTree';
 
 function jsxFrag(props: { children: any[] }) {
   try {
     const element = document.createDocumentFragment();
 
-    const treeElement: TreeElement = {
-      type: null,
-      child: null,
-      sibling: null,
+    const treeElement: TreeElement = createTreeElement({
       owner: currentTreeElement,
       element,
-      props
-    };
+      props,
+      fragElements: [...props.children]
+    });
 
     addChildren(element, props.children);
     addTreeChildren(props.children, treeElement);

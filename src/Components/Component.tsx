@@ -1,6 +1,5 @@
-// import { TestContext } from '../App';
-// import { useContext } from '../Context/createContext';
 import { TestContext } from '../App';
+import { useContext } from '../Context/createContext';
 import { globals } from '../globals';
 import { useEffect } from '../hooks/useEffect';
 import { useRef } from '../hooks/useRef';
@@ -10,6 +9,8 @@ import './styles.css';
 
 export const Text: Reactiv.Component<{ count: number }> = (attributes) => {
   const { count, children, ...restProps } = attributes;
+  const [value, setValue] = useContext(TestContext);
+  console.log(value);
   // const [value, setValue] = useState(count || 0);
 
   // const onClick = () => {
@@ -23,7 +24,11 @@ export const Text: Reactiv.Component<{ count: number }> = (attributes) => {
   return (
     <div className="TextTop">
       <div>
+        {value}
         <p {...restProps}>Other text</p>
+        <button onClick={() => setValue((prev) => prev + 5)}>
+          Change context
+        </button>
         <Button />
       </div>
     </div>
@@ -35,33 +40,31 @@ export const Component: Reactiv.Component<{ count: number }> = (
 ): Node => {
   const { count, children, ...restProps } = attributes;
   // const [value, setValue] = useState(0);
-  // const ref = useRef<number>(1);
+  const ref = useRef<HTMLElement | null>(null);
   // const contextValue = useContext(TestContext);
   // console.log(contextValue);
 
-  // const onClick = () => {
-  //   ref.current = ref.current + 1;
-  //   // ref.current?.classList.add('active');
-  // };
+  const onClick = () => {
+    //   ref.current = ref.current + 1;
+    ref.current?.classList.add('active');
+  };
 
-  // const onOtherClick = () => {
-  //   setValue((prev) => prev + 2);
-  //   // contextValue.a++;
-  //   // ref.current?.classList.remove('active');
-  // };
+  const onOtherClick = () => {
+    //   setValue((prev) => prev + 2);
+    //   // contextValue.a++;
+    ref.current?.classList.remove('active');
+  };
 
   // useEffect(() => {}, [ref.current]);
 
   return (
     <div>
-      <Text count={1} className="Text child" />
-
       <div {...restProps}>
-        <Text count={2} className="Text child" />
+        <Text count={2} ref={ref} className="Text child" />
 
         <>
-          <p className="non-component">Test</p>
-          <p>other</p>
+          <button onClick={onClick}>On</button>
+          <button onClick={onOtherClick}>Off</button>
         </>
       </div>
     </div>
@@ -69,9 +72,14 @@ export const Component: Reactiv.Component<{ count: number }> = (
 };
 
 export const Button = () => {
+  const [value, setValue] = useState(10);
+
   return (
     <>
-      <button onClick={() => {}}>Click kid</button>
+      <p>{value}</p>
+      <button onClick={() => setValue((current) => current + 1)}>
+        Click kid
+      </button>
     </>
   );
 };

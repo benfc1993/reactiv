@@ -1,12 +1,12 @@
 import { benchmark } from './benchmark';
+import _ from 'lodash';
 
 export const CreateUUID = (
-  fn: string,
-  prevHash: string | null,
-  column: number,
-  layer: number
+  props: any[],
+  element: Node | null,
+  cache: any[]
 ) => {
-  const str = fn + (prevHash || '') + column.toString() + layer.toString();
+  const str = _.toString(props) + _.toString(element) + _.toString(cache);
   return benchmark(() => quickHash(str), 'CreateUUID');
 };
 

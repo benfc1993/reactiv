@@ -5,6 +5,8 @@ import livereload from 'rollup-plugin-livereload';
 import { uglify } from 'rollup-plugin-uglify';
 import css from 'rollup-plugin-import-css';
 import { swc, defineRollupSwcOption } from 'rollup-plugin-swc3';
+import resolve from 'rollup-plugin-node-resolve';
+import commonjs from 'rollup-plugin-commonjs';
 import path from 'path';
 
 const devPlugins =
@@ -21,7 +23,7 @@ const devPlugins =
 export default {
   input: ['./src/index.tsx'],
   output: {
-    format: 'es',
+    format: 'iife',
     dir: 'dist',
     globals: {
       ['./src/Jsx/pragma.ts']: 'jsxPragma',
@@ -29,9 +31,15 @@ export default {
     }
   },
   plugins: [
+    resolve({
+      jsnext: true,
+      main: true,
+      browser: true
+    }),
+    commonjs(),
     css(),
     typescript({
-      target: 'es5',
+      target: 'es2015',
       lib: ['dom', 'dom.iterable', 'esnext'],
       allowJs: true,
       skipLibCheck: true,
@@ -43,12 +51,13 @@ export default {
       moduleResolution: 'node',
       resolveJsonModule: true,
       isolatedModules: true,
-      outDir: './dist',
-      noEmit: true,
       jsx: 'preserve'
     }),
     swc(
       defineRollupSwcOption({
+        module: {
+          type: 'nodenext'
+        },
         jsc: {
           transform: {
             react: {
@@ -63,6 +72,7 @@ export default {
       jsxPragma: path.resolve(__dirname, 'src/Jsx/pragma.ts'),
       jsxFrag: path.resolve(__dirname, 'src/Jsx/frag.ts')
     }),
+
     ...devPlugins
   ]
 };
