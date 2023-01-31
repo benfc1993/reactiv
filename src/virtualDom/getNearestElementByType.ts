@@ -5,10 +5,10 @@ export const getNearestElementByType = <T extends Reactiv.Component>(
   startElement: TreeElement,
   type: T
 ) => {
-  if (startElement.owner === null) return null;
-  let currentElement: TreeElement | null = startElement.owner;
+  if (startElement.parent === null) return null;
+  let currentElement: TreeElement | null = startElement.parent;
 
-  if (currentElement.owner !== null)
+  if (currentElement.parent !== null)
     currentElement = addParents(currentElement, type);
   return currentElement;
 };
@@ -17,10 +17,10 @@ const addParents = <T extends Reactiv.Component>(
   treeElement: TreeElement,
   type: T
 ): TreeElement | null => {
-  let currentElement = treeElement.owner;
+  let currentElement = treeElement.parent;
   let result = null;
   while (currentElement !== null) {
-    if (currentElement.owner !== null) {
+    if (currentElement.parent !== null) {
       result = addParents(currentElement, type);
       if (result !== null) return result;
     }

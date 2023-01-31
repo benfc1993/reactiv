@@ -5,7 +5,7 @@ const blankTree: TreeElement = {
   type: 'root',
   child: null,
   sibling: null,
-  owner: null,
+  parent: null,
   element: null,
   DomElement: null,
   props: null,

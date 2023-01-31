@@ -9,8 +9,8 @@ import './styles.css';
 
 export const Text: Reactiv.Component<{ count: number }> = (attributes) => {
   const { count, children, ...restProps } = attributes;
-  const [value, setValue] = useContext(TestContext);
-  console.log(value);
+  // const [value, setValue] = useContext(TestContext);
+  // console.log(value);
   // const [value, setValue] = useState(count || 0);
 
   // const onClick = () => {
@@ -24,11 +24,11 @@ export const Text: Reactiv.Component<{ count: number }> = (attributes) => {
   return (
     <div className="TextTop">
       <div>
-        {value}
+        {/* {value} */}
         <p {...restProps}>Other text</p>
-        <button onClick={() => setValue((prev) => prev + 5)}>
+        {/* <button onClick={() => setValue((prev) => prev + 5)}>
           Change context
-        </button>
+        </button> */}
         <Button />
       </div>
     </div>

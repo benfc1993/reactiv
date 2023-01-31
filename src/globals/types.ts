@@ -4,7 +4,7 @@ export type TreeElement = {
   type: any;
   child: TreeElement | null;
   sibling: TreeElement | null;
-  owner: TreeElement | null;
+  parent: TreeElement | null;
   element: Node | null;
   DomElement: Node | null;
   props: any | null;

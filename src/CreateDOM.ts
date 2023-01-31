@@ -3,7 +3,7 @@ import { createTree } from './virtualDom/createTree';
 
 export let rootNode!: HTMLElement;
 
-export const CreateDOM = (rootId: string, rootFn: Reactiv.Component) => {
+export const CreateDOM = (rootId: string, rootFn: Node) => {
   console.time('CreateVirtualDom');
 
   const tryGetRootNode = document.getElementById(rootId);

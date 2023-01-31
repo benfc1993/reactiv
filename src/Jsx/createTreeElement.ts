@@ -3,11 +3,11 @@ import { TreeElement, TreeElementAction } from '../globals';
 export const createTreeElement = (
   values: Partial<TreeElement>
 ): TreeElement => {
-  const newTreeElement = {
+  const newTreeElement: TreeElement = {
     type: null,
     child: null,
     sibling: null,
-    owner: null,
+    parent: null,
     element: null,
     DomElement: null,
     props: null,
