@@ -1,4 +1,4 @@
-import { TreeElement, globals } from '../globals';
+import { TreeNode, globals } from '../globals';
 import { initialiseHook } from '../hooks/initialiseHook';
 import { getNearestElementByType } from '../virtualDom/getNearestElementByType';
 import { Attributes, Reactiv } from '../types';
@@ -24,7 +24,7 @@ export const createContext = <T,>(intialValue?: T): Context<T> => {
 };
 
 type ContextCache<T> = {
-  treeElement: TreeElement | null;
+  treeElement: TreeNode | null;
   value: T;
 };
 

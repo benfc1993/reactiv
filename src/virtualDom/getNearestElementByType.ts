@@ -1,12 +1,12 @@
-import { TreeElement } from '../globals';
+import { TreeNode } from '../globals';
 import { Reactiv } from '../types';
 
-export const getNearestElementByType = <T extends Reactiv.Component>(
-  startElement: TreeElement,
+export const getNearestElementByType = <T extends Reactiv.Component<any>>(
+  startElement: TreeNode,
   type: T
 ) => {
   if (startElement.parent === null) return null;
-  let currentElement: TreeElement | null = startElement.parent;
+  let currentElement: TreeNode | null = startElement.parent;
 
   if (currentElement.parent !== null)
     currentElement = addParents(currentElement, type);
@@ -14,21 +14,22 @@ export const getNearestElementByType = <T extends Reactiv.Component>(
 };
 
 const addParents = <T extends Reactiv.Component>(
-  treeElement: TreeElement,
+  treeElement: TreeNode,
   type: T
-): TreeElement | null => {
+): TreeNode | null => {
   let currentElement = treeElement.parent;
   let result = null;
   while (currentElement !== null) {
+    if (currentElement.type === type) {
+      result = currentElement;
+      return result;
+    }
+
     if (currentElement.parent !== null) {
       result = addParents(currentElement, type);
       if (result !== null) return result;
     }
 
-    if (currentElement.type === type) {
-      result = currentElement;
-      return result;
-    }
     currentElement = currentElement.sibling;
   }
 

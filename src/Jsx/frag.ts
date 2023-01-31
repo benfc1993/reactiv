@@ -1,5 +1,5 @@
 import '../utils/array.ts';
-import { createTreeElement } from './createTreeElement';
+import { createTreeNode } from './createTreeNode';
 
 function jsxFrag(props: { children: any[] }) {
   return {
@@ -7,7 +7,7 @@ function jsxFrag(props: { children: any[] }) {
     props: {
       ...props,
       children: props.children.flatMap((child) =>
-        typeof child === 'object' ? child : createTreeElement(child)
+        typeof child === 'object' ? child : createTreeNode(child)
       )
     }
   };

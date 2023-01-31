@@ -1,21 +1,22 @@
-import { createTreeElement } from '../Jsx/createTreeElement';
+import { createTreeNode } from '../Jsx/createTreeNode';
 import { handleProps } from '../Jsx/utils';
-import { TreeElement, globals } from '../globals';
-import { Reactiv } from '../types';
-import { Element } from '../Jsx/pragma';
+import { TreeNode, globals } from '../globals';
 import { commitVirtualDom } from './createVirtualDom';
+import { debug } from '../debugConfig';
+import { loudLog } from '../utils/loudLog';
 
-export const stack: TreeElement[] = [];
-export const queue: TreeElement[] = [];
+export const stack: TreeNode[] = [];
+export const queue: TreeNode[] = [];
 
-export let currentElement: TreeElement | null;
-let rootElement: TreeElement | null = null;
+export let currentNode: TreeNode | null;
+let rootNode: TreeNode | null = null;
 export const createTree = (root: HTMLElement, rootFn: Node) => {
-  rootElement = createTreeElement({
-    DomElement: root,
+  rootNode = createTreeNode({
+    domElement: root,
     props: { children: [rootFn] }
   });
-  currentElement = rootElement;
+  currentNode = rootNode;
+  if (debug.benchmark) console.time('processTree');
 
   requestIdleCallback((deadline: IdleDeadline) => processTree(deadline));
 };
@@ -23,80 +24,88 @@ export const createTree = (root: HTMLElement, rootFn: Node) => {
 export const processTree = (deadline: IdleDeadline) => {
   let shouldYield = false;
 
-  while (currentElement && !shouldYield) {
-    currentElement = processNextElement(currentElement);
+  while (currentNode && !shouldYield) {
+    currentNode = processNextNode(currentNode);
 
     shouldYield = deadline.timeRemaining() < 1;
   }
-  if (!currentElement && rootElement) {
-    console.log(rootElement);
-    commitVirtualDom(rootElement?.child);
+  if (!currentNode && rootNode) {
+    if (debug.enableDebug) loudLog('tree', rootNode);
+    if (debug.benchmark) {
+      console.timeEnd('processTree');
+      console.time('commit virtual DOM');
+    }
+    commitVirtualDom(rootNode?.child);
   } else {
     requestIdleCallback((deadline: IdleDeadline) => processTree(deadline));
   }
 };
 
-requestIdleCallback(processTree);
-
-const processNextElement = (currentElement: TreeElement) => {
-  if (typeof currentElement.type === 'function') {
-    globals.resetCacheIndex();
-    const children = [currentElement.type(currentElement.props)];
-
-    handleChildren(currentElement, children);
+const processNextNode = (currentNode: TreeNode) => {
+  globals.currentTreeNode = currentNode;
+  if (typeof currentNode.type === 'function') {
+    handleFunctionComponentNode(currentNode);
   } else {
-    currentElement.DomElement = createDom(currentElement);
+    currentNode.domElement = createDom(currentNode);
 
-    handleChildren(currentElement, currentElement.props?.children);
+    handleChildren(currentNode, currentNode.props?.children);
   }
-  if (currentElement.child !== null) return currentElement.child;
+  if (currentNode.child !== null) return currentNode.child;
 
-  let nextElement: TreeElement | null = currentElement;
-  while (nextElement) {
-    if (nextElement.sibling) return nextElement.sibling;
-    nextElement = nextElement.parent;
+  let nextNode: TreeNode | null = currentNode;
+  while (nextNode) {
+    if (nextNode.sibling) return nextNode.sibling;
+    nextNode = nextNode.parent;
   }
   return null;
 };
-function createDom(currentElement: TreeElement): Node | null {
-  if (!currentElement.type) return currentElement.DomElement;
-  let domElement;
 
-  switch (currentElement.type) {
+const handleFunctionComponentNode = (functionNode: TreeNode) => {
+  const { type, props } = functionNode;
+  globals.resetCacheIndex();
+  const children = [type(props)];
+
+  handleChildren(functionNode, children);
+};
+
+function createDom(currentNode: TreeNode): Node | null {
+  if (!currentNode.type) return currentNode.domElement;
+  let DomElement;
+
+  switch (currentNode.type) {
     case 'TEXT_ELEMENT':
-      domElement = document.createTextNode('');
+      DomElement = document.createTextNode('');
       break;
     case 'FRAGMENT':
       const frag = document.createDocumentFragment();
-      currentElement.props.children.forEach((child: any) => {
+      currentNode.props.children.forEach((child: any) => {
         if (typeof child.type !== 'function' && typeof child !== 'object')
           frag.appendChild(child);
       });
       break;
     default:
-      domElement = document.createElement(currentElement.type);
+      DomElement = document.createElement(currentNode.type);
       break;
   }
 
-  handleProps(domElement, currentElement.props);
-  return domElement;
+  handleProps(DomElement, currentNode.props);
+  return DomElement;
 }
-function handleChildren(currentElement: TreeElement, children: Element[]) {
+function handleChildren(currentNode: TreeNode, children: TreeNode[]) {
   if (!children) return;
-  let prevSibling: TreeElement | null = null;
+  let prevSibling: TreeNode | null = null;
 
   for (let i = 0; i < children.length; i++) {
     const child = children[i];
 
-    const newElement: TreeElement = createTreeElement({
+    const newNode: TreeNode = createTreeNode({
       type: child.type,
       props: child.props,
-      parent: currentElement
+      parent: currentNode
     });
-    if (i == 0) currentElement.child = newElement;
-    else if (prevSibling) prevSibling.sibling = newElement;
+    if (i == 0) currentNode.child = newNode;
+    else if (prevSibling) prevSibling.sibling = newNode;
 
-    i++;
-    prevSibling = newElement;
+    prevSibling = newNode;
   }
 }

@@ -1,3 +1,7 @@
-export const debug: { benchmark: boolean } = {
-  benchmark: true
+export const debug: {
+  enableDebug: any;
+  benchmark: boolean;
+} = {
+  benchmark: true,
+  enableDebug: true
 };

@@ -1,6 +1,6 @@
-import { TreeElement, globals } from '../globals';
+import { TreeNode, globals } from '../globals';
 
-const createTextElement = (text: string): Element => {
+const createTextElement = (text: string): Partial<TreeNode> => {
   return {
     type: 'TEXT_ELEMENT',
     props: {
@@ -10,13 +10,11 @@ const createTextElement = (text: string): Element => {
   };
 };
 
-export type Element = Partial<TreeElement>;
-
 function jsxPragma(
   type: string,
   props: Record<string, any>,
   ...children: any[]
-): Element {
+): Partial<TreeNode> {
   const response = {
     type,
     props: {

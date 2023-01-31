@@ -1,16 +1,16 @@
-import { Globals, TreeElement, TreeElementAction } from './types';
+import { Globals, TreeNode, TreeNodeAction } from './types';
 import _ from 'lodash';
 
-const blankTree: TreeElement = {
+const blankTree: TreeNode = {
   type: 'root',
   child: null,
   sibling: null,
   parent: null,
   element: null,
-  DomElement: null,
+  domElement: null,
   props: null,
   cache: [],
-  action: TreeElementAction.NONE
+  action: TreeNodeAction.NONE
 };
 
 export const globals: Globals = {
@@ -21,7 +21,7 @@ export const globals: Globals = {
   set tree(value) {
     this.nodeTree = value;
   },
-  currentTreeElement: blankTree,
+  currentTreeNode: blankTree,
   cacheIndex: 0,
   resetCacheIndex() {
     this.cacheIndex = 0;

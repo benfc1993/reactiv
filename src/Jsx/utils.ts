@@ -1,7 +1,3 @@
-import { TreeElement } from '../globals';
-import { stack } from '../virtualDom/createTree';
-import { isWritable } from '../utils/isWritable';
-
 export const handleProps = (
   element: HTMLElement,
   props: Record<string, any>

@@ -1,21 +1,26 @@
-import { TreeElement, TreeElementAction, globals } from '../globals';
-import _ from 'lodash';
+import { TreeNode, TreeNodeAction, globals } from '../globals';
+import { debug } from '../debugConfig';
 
-export const commitVirtualDom = (tree: TreeElement | null) => {
+export const commitVirtualDom = (tree: TreeNode | null) => {
+  if (!tree) return;
+  commitElement(tree);
+  if (debug.benchmark) console.timeEnd('commit virtual DOM');
+};
+const commitElement = (tree: TreeNode | null) => {
   if (!tree) return;
 
-  let parentElement: TreeElement | null = tree.parent;
+  let parentElement: TreeNode | null = tree.parent;
 
-  while (!parentElement?.DomElement) {
+  while (!parentElement?.domElement) {
     parentElement = parentElement?.parent ?? null;
   }
 
-  const parentDomElement = parentElement?.DomElement;
+  const parentDomElement = parentElement?.domElement;
 
-  if (tree.action === TreeElementAction.ADD && tree.DomElement) {
-    parentDomElement.appendChild(tree.DomElement);
+  if (tree.action === TreeNodeAction.ADD && tree.domElement) {
+    parentDomElement.appendChild(tree.domElement);
   }
 
-  commitVirtualDom(tree.child);
-  commitVirtualDom(tree.sibling);
+  commitElement(tree.child);
+  commitElement(tree.sibling);
 };
