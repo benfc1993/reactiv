@@ -1,18 +1,31 @@
 import { Reactiv } from '../types';
 
+export type TreeNode = {
+  type: any;
+  child: TreeNode | null;
+  sibling: TreeNode | null;
+  parent: TreeNode | null;
+  element: Node | null;
+  domElement: Node | null;
+  props: any | null;
+  cache: any[];
+  fragElements?: Node[];
+  fragDomElements?: Node[];
+  action: TreeNodeAction;
+};
+
+export enum TreeNodeAction {
+  NONE = 'NONE',
+  ADD = 'ADD',
+  UPDATE = 'UPDATE'
+}
+
 export interface Globals {
-  hasRendered: boolean;
-  hasRend: boolean;
-  renderOrder: string[];
-  currId: string;
-  currentId: string;
-  currentStateIndex: number;
-  currentNodeIndex: number;
-  incrementCurrentId: () => void;
-  incrementCurrentStateIndex: () => void;
-  resetCurrentStateIndex: () => void;
-  componentElements: {
-    [id: string]: Reactiv.Element;
-  };
-  getCurrentComponentElement: () => Reactiv.Element;
+  get tree(): TreeNode;
+  set tree(value: TreeNode);
+  nodeTree: TreeNode;
+  currentTreeNode: TreeNode;
+  cacheIndex: number;
+  resetCacheIndex(): void;
+  incrementCurrentStateIndex(): void;
 }

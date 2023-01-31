@@ -1,35 +1,32 @@
-import { Globals } from './types';
+import { Globals, TreeNode, TreeNodeAction } from './types';
+import _ from 'lodash';
+
+const blankTree: TreeNode = {
+  type: 'root',
+  child: null,
+  sibling: null,
+  parent: null,
+  element: null,
+  domElement: null,
+  props: null,
+  cache: [],
+  action: TreeNodeAction.NONE
+};
 
 export const globals: Globals = {
-  renderOrder: [],
-  currId: '0',
-  set currentId(value: string) {
-    this.currId = value;
+  nodeTree: blankTree,
+  get tree() {
+    return this.nodeTree;
   },
-  get currentId(): string {
-    return this.currId;
+  set tree(value) {
+    this.nodeTree = value;
   },
-  currentNodeIndex: 0,
-  incrementCurrentId() {
-    this.currentNodeIndex += 1;
-    this.currentId = this.renderOrder[this.currentNodeIndex];
+  currentTreeNode: blankTree,
+  cacheIndex: 0,
+  resetCacheIndex() {
+    this.cacheIndex = 0;
   },
-  hasRend: false,
-  set hasRendered(value: boolean) {
-    this.hasRend = value;
-  },
-  get hasRendered(): boolean {
-    return this.hasRend;
-  },
-  currentStateIndex: 0,
   incrementCurrentStateIndex() {
-    this.currentStateIndex += 1;
-  },
-  resetCurrentStateIndex() {
-    this.currentStateIndex = 0;
-  },
-  componentElements: {},
-  getCurrentComponentElement() {
-    return this.componentElements[this.currentId];
+    this.cacheIndex++;
   }
 };

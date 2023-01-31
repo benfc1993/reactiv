@@ -1,16 +1,6 @@
 export namespace Reactiv {
   export type BaseProps = { children?: any[] } & Attributes;
   export type Component<T = {}, K = T & BaseProps> = (props: K) => Node;
-  export type Element = {
-    fn: Component;
-    props: object;
-    el?: Node;
-    parentId: string;
-    parentElement?: Node;
-    isFragment: boolean;
-    fragmentChildren: Node[];
-    cache: any[];
-  };
 }
 
 export type Attributes = {
