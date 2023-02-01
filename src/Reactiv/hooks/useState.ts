@@ -10,7 +10,9 @@ export const useState = <TState>(
 	initialValue: TState
 ): [TState, SetValue<TState>] => {
 	const { cache, cacheIndex, treeElement } = initialiseHook()
-	if (!cache[cacheIndex]) cache[cacheIndex] = initialValue
+	if (!cache[cacheIndex])
+		cache[cacheIndex] =
+			initialValue instanceof Function ? initialValue() : initialValue
 	const setValue = (state: TState | ((prev: TState) => TState)) => {
 		if (state instanceof Function) {
 			cache[cacheIndex] = state(cache[cacheIndex] as TState)

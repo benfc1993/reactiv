@@ -1,16 +1,14 @@
 import { useContext } from '../Reactiv/Context/createContext'
-import { globals } from '../Reactiv/globals'
-import { useEffect } from '../Reactiv/hooks/useEffect'
 import { useRef } from '../Reactiv/hooks/useRef'
 import { useState } from '../Reactiv/hooks/useState'
 import { Component } from '../Reactiv/types'
+import { useStorage } from '../customHooks/useStorage'
 import { TestContext } from './store'
 import './styles.css'
 
 export const Text: Component<{ count: number }> = (attributes) => {
 	const { count, ...restProps } = attributes
 	const [value, setValue] = useContext(TestContext)
-	console.log(globals.tree)
 
 	return (
 		<div className='TextTop'>
@@ -29,7 +27,7 @@ export const BasicComponent: Component<{ count: number }> = (
 	attributes
 ): Node => {
 	const { count, children, ...restProps } = attributes
-	const [value, setValue] = useState(count)
+	const [value, setValue] = useStorage(count, 'testing')
 	const ref = useRef<HTMLElement | null>(null)
 
 	const onClick = () => {
@@ -37,14 +35,14 @@ export const BasicComponent: Component<{ count: number }> = (
 	}
 
 	const onOtherClick = () => {
-		setValue((prev) => prev + 2)
+		setValue((prev) => (prev ? prev + 2 : 2))
 		ref.current?.classList.remove('active')
 	}
 
 	return (
 		<div>
 			<div {...restProps}>
-				<Text count={value} ref={ref} className='Text child' />
+				<Text count={value ?? 0} ref={ref} className='Text child' />
 
 				{children}
 
