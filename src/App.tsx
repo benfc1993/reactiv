@@ -1,35 +1,31 @@
-import { Component, Text } from './Components/Component';
-import { createContext } from './Context/createContext';
-import { SetValue, useState } from './hooks/useState';
-import { Reactiv } from './types';
+import { BasicComponent, Text } from './Components/Component'
+import { TestContext, useStore } from './Components/store'
+import { Component } from './Reactiv/types'
 
-export const TestContext = createContext<[number, SetValue<number>]>()!;
-
-const useStore = (initialValue: number): [number, SetValue<number>] => {
-  const [value, setValue] = useState(initialValue);
-  return [value, setValue];
-};
-
-export const App: Reactiv.Component = (): Node => {
-  return (
-    <div className="App">
-      <TestContext.Provider value={useStore(27)}>
-        <div className="new-element">
-          <Text count={2} />
-        </div>
-        <div>
-          <div>
-            <div>
-              <Component count={4} />
-            </div>
-          </div>
-        </div>
-        <div className="sibling-here">
-          <>
-            <Text count={3} />
-          </>
-        </div>
-      </TestContext.Provider>
-    </div>
-  );
-};
+export const App: Component = (): Node => {
+	return (
+		<div className='App'>
+			<TestContext.Provider value={useStore(27)}>
+				<div className='new-element'>
+					<Text count={2} />
+				</div>
+				<div>
+					<div>
+						<div>
+							<BasicComponent count={4}>
+								<p>Testing</p>
+							</BasicComponent>
+						</div>
+					</div>
+				</div>
+			</TestContext.Provider>
+			<TestContext.Provider value={useStore(27)}>
+				<div className='sibling-here'>
+					<>
+						<Text count={3} />
+					</>
+				</div>
+			</TestContext.Provider>
+		</div>
+	)
+}
