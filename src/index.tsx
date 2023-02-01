@@ -1,5 +1,5 @@
-import { App } from './App';
-import { CreateDOM } from './CreateDOM';
-import './style.css';
+import { App } from './App'
+import { CreateDOM } from './Reactiv/CreateDOM'
+import './style.css'
 
-CreateDOM('root', <App />);
+CreateDOM('root', <App />)
