@@ -1,6 +1,6 @@
 # reactiv
 
-react clone written from scratch
+react clone written from scratch with tools for stepping through the react life cycle to aid teaching / learning react.
 
 ## Start
 
