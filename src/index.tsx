@@ -1,5 +1,93 @@
-import { App } from './App'
-import { CreateDOM } from './Reactiv/CreateDOM'
-import './style.css'
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  createApplication,
+  useMemo,
+} from './react'
 
-CreateDOM('root', <App />)
+const Testing = (props: { count?: number; key?: string }) => {
+  const [state, setState] = useState(0)
+  const [count, setCount] = useState(props?.count ?? 1)
+  const testing = useMemo(() => count * 10, [state])
+
+  useEffect(() => {
+    setState(count * 10)
+  }, [count])
+
+  return (
+    <main>
+      <p>{testing}</p>
+      <p
+        className={`update-message-${state}`}
+        onClick={() => {
+          setState((current) => current + 1)
+        }}
+      >
+        testing {props.key} - {state}
+      </p>
+      <p onClick={() => setCount((current) => current * 2)}>count - {count}</p>
+      <div>{count > 2 && count < 10 ? <Input /> : <p>other</p>}</div>
+    </main>
+  )
+}
+
+const TextSplit = (props: { text: string; key?: string }) => {
+  const { text } = props
+  return (
+    <div>
+      {text.split('').map((char) => (
+        <p key={`text-split-${char}`}>{char}</p>
+      ))}
+    </div>
+  )
+}
+
+const Input = () => {
+  const [value, setValue] = useState('test')
+  const ref = useRef<number | null>(1)
+
+  useEffect(() => {}, [ref.current])
+
+  return (
+    <div>
+      <div onClick={() => (ref.current += 1)}>change ref</div>
+      <div onClick={() => console.log(ref.current)}>log ref</div>
+      <input
+        type='text'
+        value={value}
+        onChange={(e) => {
+          setValue(e.target.value)
+        }}
+      />
+      <TextSplit text={value} />
+      {ref?.current > 1 && <p>test</p>}
+    </div>
+  )
+}
+const ParentToPassDown = () => {
+  const [count, setCount] = useState(1)
+  return (
+    <div>
+      passing down {count}
+      <button onClick={() => setCount((current) => current + 1)}>change</button>
+      <Testing count={count} />
+    </div>
+  )
+}
+
+const App = () => (
+  <div draggable>
+    {/* <TextSplit text="asd" /> */}
+    {/* <ParentToPassDown /> */}
+    <Testing key='i-made-this' />
+    {/* <h2>Hello React!</h2> */}
+    {/* <Testing key="another" /> */}
+    {/* <p>I am a pargraph</p> */}
+    {/* <input type="text" /> */}
+    <Input />
+    {/* {1 === 2 && <p>test</p>} */}
+  </div>
+)
+
+createApplication(document.getElementById('root')!, App)
