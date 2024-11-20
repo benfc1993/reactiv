@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "concurrently \"esbuild ./src/index.tsx --tsconfig=tsconfig.json --watch --bundle --outdir=./dist/js\" \"npx live-server dist\"",
+    "dev": "rm -rf build && mkdir build && cp -r public/* build && concurrently \"esbuild ./src/index.tsx --tsconfig=tsconfig.json --watch --bundle --outdir=./build/js\" \"npx live-server build\"",
     "build": "esbuild ./src/index.tsx --outdir=./dist/js --bundle"
   },
   "author": "",
