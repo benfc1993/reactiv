@@ -1,7 +1,7 @@
 import { map } from '../globalState'
-import { ComponentReactNode } from '../types'
+import { ReactivComponentNode } from '../types'
 
-export function createNewComponent(node: ComponentReactNode) {
+export function createNewComponent(node: ReactivComponentNode) {
   map.set(node.props.key, {
     component: node.fn,
     key: node.props.key,
