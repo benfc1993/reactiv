@@ -12,7 +12,9 @@ export function useState<TState>(
 
   return (() => {
     const cache = map.get(internalKey)
-    if (!cache.hooks[idx])
+
+    if (!cache) throw new Error('Cache not found for useState')
+    if (!cache?.hooks[idx])
       cache.hooks[idx] = {
         value:
           typeof initialState === 'function'

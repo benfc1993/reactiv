@@ -1,20 +1,21 @@
 import { addToDevTree, commitNode, Action } from '../../devTools'
-import { globalKey, hookIndex, map } from '../globalState'
-import { ReactNode } from '../types'
+import { map } from '../globalState'
+import { ReactivNode } from '../types'
 import { createNewComponent } from './createNewComponent'
+import { mountComponent } from './mountComponent'
 
-export function reconcile(before: ReactNode, after: ReactNode) {
+export function reconcile(before: ReactivNode, after: ReactivNode) {
   let current = after
+  // Reconcile if the ReactNode is a component
   if (before.isComponent && after.isComponent && before.tag === after.tag) {
     addToDevTree(
       before.props.key,
       before.tag,
       before === after ? Action.ADDED_COMPONENT : Action.RE_RENDER
     )
-    globalKey.value = before.props?.key
-    hookIndex.value = 0
+
     current.children = [
-      after.fn({ ...after.props, key: before.props?.key }),
+      mountComponent(after, { ...after.props, key: before.props?.key }),
     ].flatMap((child) => child)
 
     const key = before.props.key
@@ -29,19 +30,27 @@ export function reconcile(before: ReactNode, after: ReactNode) {
     }
   }
 
+  // loop through and reconcile children
   for (let i = 0; i < before.children.length; i++) {
-    const child = before.children[i]
+    const beforeChild = before.children[i]
     const afterChild = current.children[i]
 
+    // if both children are value types take the new value
+    if (isPrimitiveValue(beforeChild) && isPrimitiveValue(afterChild)) {
+      before.children[i] = afterChild
+      continue
+    }
+
+    // if one child is false or null the node needs to be removed or added
     if (
-      isNullChild(child) ||
+      isNullChild(beforeChild) ||
       isNullChild(afterChild) ||
-      child.tag !== afterChild.tag
+      beforeChild.tag !== afterChild.tag
     ) {
       if (afterChild) {
         before.children[i] = afterChild
-        if (child?.isComponent) {
-          map.delete(child.props.key)
+        if (beforeChild?.isComponent) {
+          map.delete(beforeChild.props.key)
         }
         if (afterChild.isComponent) createNewComponent(afterChild)
         reconcile(before.children[i], afterChild)
@@ -50,62 +59,59 @@ export function reconcile(before: ReactNode, after: ReactNode) {
       continue
     }
 
-    if (
-      child.isComponent &&
-      afterChild.isComponent &&
-      child.tag === afterChild.tag
-    ) {
-      reconcile(child, afterChild)
+    // if both children are components call reconcile on them to mount and reconcile their resultant children
+    if (beforeChild.isComponent && afterChild.isComponent) {
+      reconcile(beforeChild, afterChild)
       continue
     }
 
-    if (child instanceof Array && afterChild instanceof Array) {
-      if (
-        child.some((c) => !c.props?.key) ||
-        afterChild.some((c) => !c.props?.key)
-      ) {
-        before.children[i] = afterChild
-        continue
-      }
-
-      ;(before.children[i] as unknown as ReactNode[]) = (
-        afterChild as ReactNode[]
+    // if both before and after children are arrays loop over the arrays and reconcile the items using the keys to maintain state and relative positions
+    if (beforeChild instanceof Array && afterChild instanceof Array) {
+      // make sure the list of elements are in the order of after
+      ;(before.children[i] as unknown as ReactivNode[]) = (
+        afterChild as ReactivNode[]
       ).map((aC) => {
-        const existingItem = child.find((c) => c.props.key === aC.props.key)
+        const existingItem = beforeChild.find(
+          (c) => c.props.key === aC.props.key
+        )
         if (existingItem) {
-          return { ...existingItem, props: aC.props }
+          return {
+            ...existingItem,
+            props: { ...aC.props, key: existingItem.props.key },
+          }
         }
+        if (aC.isComponent) createNewComponent(aC)
         return aC
-      }) as ReactNode[]
+      }) as ReactivNode[]
+
+      // loop through and reconcile all elements in the array
+      ;(before.children[i] as unknown as ReactivNode[]).forEach(
+        (element, idx) => {
+          reconcile(element, afterChild[idx])
+        }
+      )
 
       continue
     }
 
-    if (typeof child === 'string' || typeof child === 'number') {
-      if (typeof afterChild === 'string' || typeof afterChild === 'number') {
-        before.children[i] = afterChild
-        continue
-      }
-    }
+    // if no above conditions are met copy props over and reconcile
+    beforeChild.props = { ...afterChild.props }
 
-    if (child.tag === afterChild.tag) {
-      if (afterChild.isComponent) {
-        const res = afterChild.fn({
-          ...afterChild.props,
-          key: child.props.key!,
-        })
-        child.props = { ...afterChild.props }
-        reconcile(child, res)
-        continue
-      }
-    }
-    child.props = { ...afterChild.props }
-
-    reconcile(child, afterChild)
+    reconcile(beforeChild, afterChild)
   }
+
   if (before.isComponent) commitNode()
 }
 
-function isNullChild(child: ReactNode | false | null): child is false {
+function isNullChild(child: ReactivNode | false | null): child is false {
   return child === false || child === null
+}
+function isPrimitiveValue(value: unknown): boolean {
+  return (
+    typeof value === 'string' ||
+    typeof value === 'number' ||
+    typeof value === 'boolean' ||
+    value === null ||
+    typeof value === 'undefined'
+  )
 }

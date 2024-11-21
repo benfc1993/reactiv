@@ -2,14 +2,14 @@ import { addToDevTree, commitNode, Action } from '../devTools'
 import { elementEvents } from './elementEvents'
 import { keys, hookIndex, map, globalKey } from './globalState'
 import { renderState } from './globalState'
-import { ReactNode } from './types'
+import { ReactivNode } from './types'
 
 export const React = {
   createElement: (
-    tag: string | ((...args: any[]) => ReactNode),
+    tag: string | ((...args: any[]) => ReactivNode),
     props: Record<string, any>,
-    ...children: ReactNode[]
-  ) => {
+    ...children: ReactivNode[]
+  ): ReactivNode => {
     if (typeof tag === 'function') {
       if (!renderState.initialRender) {
         const key = props?.key ? props.key : Math.random().toString()
@@ -31,14 +31,17 @@ export const React = {
       const state = map.get(keys[0]) ?? {
         component: tag,
         props: props
-          ? Object.entries(props).reduce((nextProps, [key, value]) => {
-              if (typeof value === 'function') {
-                nextProps[key] = value()
+          ? Object.entries(props).reduce(
+              (nextProps: Record<string, any>, [key, value]) => {
+                if (typeof value === 'function') {
+                  nextProps[key] = value()
+                  return nextProps
+                }
+                nextProps[key] = value
                 return nextProps
-              }
-              nextProps[key] = value
-              return nextProps
-            }, {})
+              },
+              {}
+            )
           : props,
         hooks: [],
         parentEl: null,
@@ -59,7 +62,7 @@ export const React = {
         ...children
       )
       const componentKey = keys.shift()
-      const res: ReactNode = {
+      const res: ReactivNode = {
         tag: tag.name,
         fn: tag,
         isComponent: true,
@@ -73,22 +76,45 @@ export const React = {
 
       commitNode()
 
-      map.get(componentKey).el = res
+      if (componentKey) {
+        const cache = map.get(componentKey)
+        if (cache) cache.el = res
+      }
+
       return res
     }
 
-    const el: ReactNode = {
-      tag: tag ?? 'fragment',
+    const el: ReactivNode = {
+      tag: tag ?? 'FRAGMENT',
       props: props
-        ? Object.entries(props).reduce((nextProps, [key, value]) => {
-            if (elementEvents.includes(key.toLowerCase())) {
-              nextProps[key.toLowerCase()] = value
-              return nextProps
-            }
+        ? Object.entries(props).reduce(
+            (nextProps: Record<string, any>, [key, value]) => {
+              if (elementEvents.includes(key.toLowerCase())) {
+                nextProps[key.toLowerCase()] = value
+                return nextProps
+              }
 
-            nextProps[key] = value
-            return nextProps
-          }, {})
+              if (key === 'style' && value instanceof Object) {
+                nextProps[key.toLowerCase()] = Object.entries(value)
+                  .map(([styleKey, styleValue]) => {
+                    const correctedStyleKey = styleKey.replace(
+                      /([A-Z])/g,
+                      (match) => `-${match.toLowerCase()}`
+                    )
+                    if (!isNaN(Number(styleValue))) {
+                      return `${correctedStyleKey}:${styleValue}px`
+                    }
+                    return `${correctedStyleKey}:${styleValue}`
+                  })
+                  .join(';')
+                return nextProps
+              }
+
+              nextProps[key] = value
+              return nextProps
+            },
+            {}
+          )
         : props,
       children,
       isComponent: false,

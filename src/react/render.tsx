@@ -1,4 +1,4 @@
-import type { ReactNode } from '.'
+import type { ReactivNode } from '.'
 import { commitTree } from '../devTools'
 import {
   globalKey,
@@ -10,20 +10,20 @@ import {
 
 export function createApplication(
   root: HTMLElement,
-  RootComponent: () => ReactNode
+  RootComponent: () => JSX.Element
 ) {
   renderState.initialRender = true
-  render(RootComponent(), root)
+  render(RootComponent() as unknown as ReactivNode, root)
   renderState.initialRender = false
-  globalKey.value = undefined
+  globalKey.value = ''
   hookIndex.value = 0
   console.log(map)
   commitTree()
-  if (renderQueue.length) renderQueue.shift()()
+  if (renderQueue.length) renderQueue.shift()?.()
   renderState.renderRunning = false
 }
 
-export function render(el: ReactNode, container: HTMLElement) {
+export function render(el: ReactivNode, container: HTMLElement) {
   renderState.renderRunning = true
   if (!el) return
   let domEl: Text | HTMLElement
@@ -40,7 +40,7 @@ export function render(el: ReactNode, container: HTMLElement) {
       : document.createElement(el.tag)
   if (el.props && 'key' in el.props) {
     const state = map.get(el.props.key)
-    if (state) {
+    if (state?.el) {
       state.el.ref = domEl
       domEl.setAttribute('data-key', state.key)
     }
@@ -57,7 +57,7 @@ export function render(el: ReactNode, container: HTMLElement) {
 
     let elProps = el.props ? Object.keys(el.props) : null
     if (elProps && elProps.length > 0) {
-      elProps.forEach((prop) => (domEl[prop] = el.props[prop]))
+      elProps.forEach((prop) => domEl.setAttribute(prop, el.props[prop]))
     }
   }
   if (el.children && el.children.length > 0) {

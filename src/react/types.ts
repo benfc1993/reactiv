@@ -1,24 +1,25 @@
-export type ReactNodeBase = {
+export type ReactivNodeBase = {
   tag: string
   props: Record<string, any>
-  children: ReactNode[]
+  children: ReactivNode[]
   ref: HTMLElement | null
 }
 
-export type ElementReactNode = ReactNodeBase & { isComponent: false }
-export type ComponentReactNode = ReactNodeBase & {
+export type ReactivElementNode = ReactivNodeBase & { isComponent: false }
+export type ReactivComponentNode = ReactivNodeBase & {
   isComponent: true
-  fn: (props: Record<string, any>) => ReactNode
+  fn: (props: Record<string, any>) => ReactivNode
 }
 
-export type ReactNode = ElementReactNode | ComponentReactNode
+export type ReactivNode = ReactivElementNode | ReactivComponentNode
+export type ReactNode = ReactivNode
 
 export type NodeCache = {
-  component: (...args: any[]) => ReactNode
+  component: (...args: any[]) => ReactivNode
   props: Record<string, any>
   hooks: CachedHook[]
   key: string
-  el: ReactNode
+  el: ReactivNode | null
 }
 export type CachedHook = UseStateHook | UseEffectHook | UseRefHook | UseMemoHook
 
