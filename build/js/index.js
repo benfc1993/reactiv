@@ -1,3 +1,4 @@
+"use strict";
 (() => {
   // src/devTools/ui.ts
   var UI = {
@@ -34,12 +35,12 @@
 
   // src/devTools/step.ts
   var Action = /* @__PURE__ */ ((Action2) => {
-    Action2[Action2["STATE_CHANGE"] = 0] = "STATE_CHANGE";
-    Action2[Action2["DEPENDENCY_CHANGE"] = 1] = "DEPENDENCY_CHANGE";
-    Action2[Action2["RE_RENDER"] = 2] = "RE_RENDER";
-    Action2[Action2["ADDED_COMPONENT"] = 3] = "ADDED_COMPONENT";
-    Action2[Action2["REMOVED_COMPONENT"] = 4] = "REMOVED_COMPONENT";
-    Action2[Action2["REF_CHANGED"] = 5] = "REF_CHANGED";
+    Action2[Action2["ADDED_COMPONENT"] = 0] = "ADDED_COMPONENT";
+    Action2[Action2["STATE_CHANGE"] = 1] = "STATE_CHANGE";
+    Action2[Action2["REF_CHANGED"] = 2] = "REF_CHANGED";
+    Action2[Action2["DEPENDENCY_CHANGE"] = 3] = "DEPENDENCY_CHANGE";
+    Action2[Action2["RE_RENDER"] = 4] = "RE_RENDER";
+    Action2[Action2["REMOVED_COMPONENT"] = 5] = "REMOVED_COMPONENT";
     Action2[Action2["NONE"] = 6] = "NONE";
     return Action2;
   })(Action || {});
@@ -87,8 +88,8 @@
       "update-message",
       `update-message-${actionType}`
     );
-    pause.toClear = cache.el.ref;
-    cache.el.ref.classList.add(`update`, `update-${actionType}`);
+    pause.toClear = cache.el?.ref;
+    cache.el?.ref?.classList.add(`update`, `update-${actionType}`);
     waitForNext(resolve);
   }
   function showAllMessages() {
@@ -110,11 +111,22 @@
         );
       const oldNode = UI.stepButton;
       const newButton = UI.stepButton.cloneNode(true);
-      UI.stepButton.parentNode.replaceChild(newButton, oldNode);
+      UI.stepButton.parentNode?.replaceChild(newButton, oldNode);
       UI.stepButton = newButton;
       resolve();
     }
     UI.stepButton.addEventListener("click", listener);
+  }
+
+  // src/react/utils.ts
+  function deepClone(obj) {
+    return Object.entries(obj).reduce(
+      (acc, [key, value]) => {
+        acc[key] = value instanceof Array ? value.map((value2) => deepClone(value2)) : value instanceof Object ? deepClone(value) : value;
+        return acc;
+      },
+      {}
+    );
   }
 
   // src/devTools/nodeTree.ts
@@ -161,6 +173,7 @@
       nodeTree.next = deepClone(nodeTree.partial);
     }
     nodeTree.partial.children = [];
+    if (!nodeTree.next) return;
     const copy = deepClone(nodeTree.next);
     nodeTree.current = copy;
     resetNodes(nodeTree.next);
@@ -173,12 +186,6 @@
       resetNodes(child);
     }
   }
-  function deepClone(obj) {
-    return Object.entries(obj).reduce((acc, [key, value]) => {
-      acc[key] = value instanceof Array ? value.map((value2) => deepClone(value2)) : value instanceof Object ? deepClone(value) : value;
-      return acc;
-    }, {});
-  }
 
   // src/react/globalState.ts
   var map = /* @__PURE__ */ new Map();
@@ -190,7 +197,7 @@
   var addToRenderQueue = (callback) => {
     renderQueue.push(callback);
     if (renderQueue.length && !renderState.initialRender && !renderState.renderRunning)
-      renderQueue.shift()();
+      renderQueue.shift()?.();
   };
 
   // src/react/render.tsx
@@ -198,11 +205,11 @@
     renderState.initialRender = true;
     render(RootComponent(), root);
     renderState.initialRender = false;
-    globalKey.value = void 0;
+    globalKey.value = "";
     hookIndex.value = 0;
     console.log(map);
     commitTree();
-    if (renderQueue.length) renderQueue.shift()();
+    if (renderQueue.length) renderQueue.shift()?.();
     renderState.renderRunning = false;
   }
   function render(el, container) {
@@ -217,7 +224,7 @@
     domEl = el.isComponent || el.tag === "FRAGMENT" ? container : document.createElement(el.tag);
     if (el.props && "key" in el.props) {
       const state = map.get(el.props.key);
-      if (state) {
+      if (state?.el) {
         state.el.ref = domEl;
         domEl.setAttribute("data-key", state.key);
       }
@@ -260,6 +267,13 @@
     });
   }
 
+  // src/react/reconciliation/mountComponent.ts
+  function mountComponent(component, props) {
+    globalKey.value = props?.key;
+    hookIndex.value = 0;
+    return component.fn(props);
+  }
+
   // src/react/reconciliation/reconcile.ts
   function reconcile(before, after) {
     let current = after;
@@ -267,12 +281,10 @@
       addToDevTree(
         before.props.key,
         before.tag,
-        before === after ? 3 /* ADDED_COMPONENT */ : 2 /* RE_RENDER */
+        before === after ? 0 /* ADDED_COMPONENT */ : 4 /* RE_RENDER */
       );
-      globalKey.value = before.props?.key;
-      hookIndex.value = 0;
       current.children = [
-        after.fn({ ...after.props, key: before.props?.key })
+        mountComponent(after, { ...after.props, key: before.props?.key })
       ].flatMap((child) => child);
       const key = before.props.key;
       const cache = map.get(key);
@@ -283,13 +295,17 @@
       }
     }
     for (let i = 0; i < before.children.length; i++) {
-      const child = before.children[i];
+      const beforeChild = before.children[i];
       const afterChild = current.children[i];
-      if (isNullChild(child) || isNullChild(afterChild) || child.tag !== afterChild.tag) {
+      if (isPrimitiveValue(beforeChild) && isPrimitiveValue(afterChild)) {
+        before.children[i] = afterChild;
+        continue;
+      }
+      if (isNullChild(beforeChild) || isNullChild(afterChild) || beforeChild.tag !== afterChild.tag) {
         if (afterChild) {
           before.children[i] = afterChild;
-          if (child?.isComponent) {
-            map.delete(child.props.key);
+          if (beforeChild?.isComponent) {
+            map.delete(beforeChild.props.key);
           }
           if (afterChild.isComponent) createNewComponent(afterChild);
           reconcile(before.children[i], afterChild);
@@ -297,62 +313,59 @@
         }
         continue;
       }
-      if (child.isComponent && afterChild.isComponent && child.tag === afterChild.tag) {
-        reconcile(child, afterChild);
+      if (beforeChild.isComponent && afterChild.isComponent) {
+        reconcile(beforeChild, afterChild);
         continue;
       }
-      if (child instanceof Array && afterChild instanceof Array) {
-        if (child.some((c) => !c.props?.key) || afterChild.some((c) => !c.props?.key)) {
-          before.children[i] = afterChild;
-          continue;
-        }
+      if (beforeChild instanceof Array && afterChild instanceof Array) {
         ;
         before.children[i] = afterChild.map((aC) => {
-          const existingItem = child.find((c) => c.props.key === aC.props.key);
+          const existingItem = beforeChild.find(
+            (c) => c.props.key === aC.props.key
+          );
           if (existingItem) {
-            return { ...existingItem, props: aC.props };
+            return {
+              ...existingItem,
+              props: { ...aC.props, key: existingItem.props.key }
+            };
           }
+          if (aC.isComponent) createNewComponent(aC);
           return aC;
         });
+        before.children[i].forEach(
+          (element, idx) => {
+            reconcile(element, afterChild[idx]);
+          }
+        );
         continue;
       }
-      if (typeof child === "string" || typeof child === "number") {
-        if (typeof afterChild === "string" || typeof afterChild === "number") {
-          before.children[i] = afterChild;
-          continue;
-        }
-      }
-      if (child.tag === afterChild.tag) {
-        if (afterChild.isComponent) {
-          const res = afterChild.fn({
-            ...afterChild.props,
-            key: child.props.key
-          });
-          child.props = { ...afterChild.props };
-          reconcile(child, res);
-          continue;
-        }
-      }
-      child.props = { ...afterChild.props };
-      reconcile(child, afterChild);
+      beforeChild.props = { ...afterChild.props };
+      reconcile(beforeChild, afterChild);
     }
     if (before.isComponent) commitNode();
   }
   function isNullChild(child) {
     return child === false || child === null;
   }
+  function isPrimitiveValue(value) {
+    return typeof value === "string" || typeof value === "number" || typeof value === "boolean" || value === null || typeof value === "undefined";
+  }
 
   // src/react/rerender.tsx
   async function rerender(Component, props) {
     renderState.renderRunning = true;
     const state = map.get(props.key);
+    if (!state || !state.el) return;
     hookIndex.value = 0;
-    reconcile(state.el, /* @__PURE__ */ react_default.createElement(Component, { ...props, key: state.props.key }));
-    globalKey.value = void 0;
+    reconcile(
+      state.el,
+      /* @__PURE__ */ react_default.createElement(Component, { ...props, key: state.props.key })
+    );
+    globalKey.value = "";
     if (renderQueue.length > 0) {
-      return renderQueue.shift()();
+      return renderQueue.shift()?.();
     }
-    render(state.el, state.el.ref.parentElement);
+    render(state.el, state.el.ref?.parentElement);
     renderState.renderRunning = false;
     showAllMessages();
     commitTree();
@@ -383,7 +396,8 @@
     hookIndex.value += 1;
     return (() => {
       const cache = map.get(internalKey);
-      if (!cache.hooks[idx])
+      if (!cache) throw new Error("Cache not found for useState");
+      if (!cache?.hooks[idx])
         cache.hooks[idx] = {
           value: typeof initialState === "function" ? initialState() : initialState
         };
@@ -394,7 +408,7 @@
         hook.value = typeof next === "function" ? next(hook.value) : next;
         await addAction(
           cache,
-          0 /* STATE_CHANGE */,
+          1 /* STATE_CHANGE */,
           `State updated from ${prevValue} to ${hook.value}`,
           true
         );
@@ -428,7 +442,7 @@
       if (hook.dependencies === null || hook?.dependencies?.some((dep, i) => dep !== dependencies[i])) {
         void addAction(
           cache,
-          1 /* DEPENDENCY_CHANGE */,
+          3 /* DEPENDENCY_CHANGE */,
           "useEffect dependencies changed, running callback"
         );
         hook.dependencies = dependencies;
@@ -439,7 +453,7 @@
       }
       void addAction(
         cache,
-        1 /* DEPENDENCY_CHANGE */,
+        3 /* DEPENDENCY_CHANGE */,
         "useEffect dependencies NOT changed"
       );
     })();
@@ -461,7 +475,7 @@
         hook.dependencies = dependencies;
         addAction(
           cache,
-          1 /* DEPENDENCY_CHANGE */,
+          3 /* DEPENDENCY_CHANGE */,
           "useMemo dependencies changed, running callback"
         );
       }
@@ -582,19 +596,22 @@
         hookIndex.value = 0;
         const state = map.get(keys[0]) ?? {
           component: tag,
-          props: props ? Object.entries(props).reduce((nextProps, [key, value]) => {
-            if (typeof value === "function") {
-              nextProps[key] = value();
+          props: props ? Object.entries(props).reduce(
+            (nextProps, [key, value]) => {
+              if (typeof value === "function") {
+                nextProps[key] = value();
+                return nextProps;
+              }
+              nextProps[key] = value;
               return nextProps;
-            }
-            nextProps[key] = value;
-            return nextProps;
-          }, {}) : props,
+            },
+            {}
+          ) : props,
           hooks: [],
           parentEl: null,
           key: keys[0]
         };
-        addToDevTree(keys[0], tag.name, 3 /* ADDED_COMPONENT */);
+        addToDevTree(keys[0], tag.name, 0 /* ADDED_COMPONENT */);
         map.set(keys[0], {
           ...state,
           props: { ...props, key: keys[0] },
@@ -616,19 +633,38 @@
           ref: null
         };
         commitNode();
-        map.get(componentKey).el = res;
+        if (componentKey) {
+          const cache = map.get(componentKey);
+          if (cache) cache.el = res;
+        }
         return res;
       }
       const el = {
-        tag: tag ?? "fragment",
-        props: props ? Object.entries(props).reduce((nextProps, [key, value]) => {
-          if (elementEvents.includes(key.toLowerCase())) {
-            nextProps[key.toLowerCase()] = value;
+        tag: tag ?? "FRAGMENT",
+        props: props ? Object.entries(props).reduce(
+          (nextProps, [key, value]) => {
+            if (elementEvents.includes(key.toLowerCase())) {
+              nextProps[key.toLowerCase()] = value;
+              return nextProps;
+            }
+            if (key === "style" && value instanceof Object) {
+              nextProps[key.toLowerCase()] = Object.entries(value).map(([styleKey, styleValue]) => {
+                const correctedStyleKey = styleKey.replace(
+                  /([A-Z])/g,
+                  (match) => `-${match.toLowerCase()}`
+                );
+                if (!isNaN(Number(styleValue))) {
+                  return `${correctedStyleKey}:${styleValue}px`;
+                }
+                return `${correctedStyleKey}:${styleValue}`;
+              }).join(";");
+              return nextProps;
+            }
+            nextProps[key] = value;
             return nextProps;
-          }
-          nextProps[key] = value;
-          return nextProps;
-        }, {}) : props,
+          },
+          {}
+        ) : props,
         children,
         isComponent: false,
         ref: null
@@ -672,7 +708,15 @@
     const ref = useRef(1);
     useEffect(() => {
     }, [ref.current]);
-    return /* @__PURE__ */ react_default.createElement("div", null, /* @__PURE__ */ react_default.createElement("div", { onClick: () => ref.current += 1 }, "change ref"), /* @__PURE__ */ react_default.createElement("div", { onClick: () => console.log(ref.current) }, "log ref"), /* @__PURE__ */ react_default.createElement(
+    return /* @__PURE__ */ react_default.createElement("div", null, /* @__PURE__ */ react_default.createElement(
+      "div",
+      {
+        onClick: () => {
+          if (ref.current) ref.current += 1;
+        }
+      },
+      "change ref"
+    ), /* @__PURE__ */ react_default.createElement("div", { onClick: () => console.log(ref.current) }, "log ref"), /* @__PURE__ */ react_default.createElement(
       "input",
       {
         type: "text",
@@ -681,8 +725,16 @@
           setValue(e.target.value);
         }
       }
-    ), /* @__PURE__ */ react_default.createElement(TextSplit, { text: value }), ref?.current > 1 && /* @__PURE__ */ react_default.createElement("p", null, "test"));
+    ), /* @__PURE__ */ react_default.createElement(TextSplit, { text: value }), ref.current && ref.current > 1 && /* @__PURE__ */ react_default.createElement("p", null, "test"));
   };
-  var App = () => /* @__PURE__ */ react_default.createElement("div", { draggable: true }, /* @__PURE__ */ react_default.createElement(Testing, { key: "i-made-this" }), /* @__PURE__ */ react_default.createElement(Input, null));
+  var ListItem = () => {
+    const [count, setCount] = useState(0);
+    return /* @__PURE__ */ react_default.createElement(react_default.Fragment, null, /* @__PURE__ */ react_default.createElement("button", { onClick: () => setCount((current) => current + 1) }, "button"), /* @__PURE__ */ react_default.createElement(react_default.Fragment, null, /* @__PURE__ */ react_default.createElement("p", null, "ListItem-", count)), /* @__PURE__ */ react_default.createElement("p", null, count < 10 ? "test" : null));
+  };
+  var ParentToPassDown = () => {
+    const [count, setCount] = useState(1);
+    return /* @__PURE__ */ react_default.createElement("div", { style: { width: 100, fontSize: 20 } }, /* @__PURE__ */ react_default.createElement("button", { onClick: () => setCount((current) => current + 1) }, "add item"), Array.from({ length: count }).map((_, i) => /* @__PURE__ */ react_default.createElement(ListItem, { key: `ListItem-${i}` })));
+  };
+  var App = () => /* @__PURE__ */ react_default.createElement("div", { draggable: true }, /* @__PURE__ */ react_default.createElement(ParentToPassDown, null), /* @__PURE__ */ react_default.createElement(Testing, { key: "i-made-this" }), /* @__PURE__ */ react_default.createElement(Input, null));
   createApplication(document.getElementById("root"), App);
 })();

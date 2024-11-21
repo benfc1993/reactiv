@@ -57,7 +57,7 @@ export function render(el: ReactivNode, container: HTMLElement) {
 
     let elProps = el.props ? Object.keys(el.props) : null
     if (elProps && elProps.length > 0) {
-      elProps.forEach((prop) => domEl.setAttribute(prop, el.props[prop]))
+      elProps.forEach((prop) => (domEl[prop] = el.props[prop]))
     }
   }
   if (el.children && el.children.length > 0) {

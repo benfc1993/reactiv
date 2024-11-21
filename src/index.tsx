@@ -58,7 +58,7 @@ const Input = () => {
       >
         change ref
       </div>
-      )<div onClick={() => console.log(ref.current)}>log ref</div>
+      <div onClick={() => console.log(ref.current)}>log ref</div>
       <input
         type='text'
         value={value}
