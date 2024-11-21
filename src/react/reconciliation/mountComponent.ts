@@ -1,8 +1,8 @@
 import { globalKey, hookIndex } from '../globalState'
-import { ComponentReactNode, ReactivNode } from '../types'
+import { ReactivComponentNode, ReactivNode } from '../types'
 
 export function mountComponent(
-  component: ComponentReactNode,
+  component: ReactivComponentNode,
   props: Record<string, any>
 ): ReactivNode | ReactivNode[] {
   globalKey.value = props?.key
