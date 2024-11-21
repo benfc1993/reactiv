@@ -2,12 +2,12 @@ import { UI } from './ui'
 import { NodeCache } from '../react'
 
 export enum Action {
+  ADDED_COMPONENT,
   STATE_CHANGE,
+  REF_CHANGED,
   DEPENDENCY_CHANGE,
   RE_RENDER,
-  ADDED_COMPONENT,
   REMOVED_COMPONENT,
-  REF_CHANGED,
   NONE,
 }
 
@@ -24,7 +24,7 @@ export const pause: {
   setIsEnabled: (value: boolean) => void
   actions: (() => Promise<void>)[]
   showAll: boolean
-  toClear: HTMLElement
+  toClear: HTMLElement | null | undefined
 } = {
   isEnabled: false,
   setIsEnabled(value: boolean) {
@@ -80,9 +80,9 @@ function showMessage(action: QueuedAction) {
     `update-message-${actionType}`
   )
 
-  pause.toClear = cache.el.ref
+  pause.toClear = cache.el?.ref
 
-  cache.el.ref.classList.add(`update`, `update-${actionType}`)
+  cache.el?.ref?.classList.add(`update`, `update-${actionType}`)
   waitForNext(resolve)
 }
 
@@ -107,7 +107,7 @@ async function waitForNext(resolve: () => void) {
       )
     const oldNode = UI.stepButton
     const newButton = UI.stepButton.cloneNode(true) as HTMLButtonElement
-    UI.stepButton.parentNode.replaceChild(newButton, oldNode)
+    UI.stepButton.parentNode?.replaceChild(newButton, oldNode)
     UI.stepButton = newButton
     resolve()
   }

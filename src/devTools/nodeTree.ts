@@ -1,3 +1,4 @@
+import { deepClone } from '../react/utils'
 import { Action } from './step'
 
 type DevTreeNode = {
@@ -61,6 +62,9 @@ export function commitTree() {
     nodeTree.next = deepClone(nodeTree.partial)
   }
   nodeTree.partial.children = []
+
+  if (!nodeTree.next) return
+
   const copy = deepClone(nodeTree.next)
   nodeTree.current = copy
   resetNodes(nodeTree.next)
@@ -74,16 +78,4 @@ function resetNodes(node: DevTreeNode) {
     const child = node.children[i]
     resetNodes(child)
   }
-}
-
-function deepClone<TObject extends Record<any, any>>(obj: TObject): TObject {
-  return Object.entries(obj).reduce((acc, [key, value]) => {
-    acc[key] =
-      value instanceof Array
-        ? value.map((value) => deepClone(value))
-        : value instanceof Object
-          ? deepClone(value)
-          : value
-    return acc
-  }, {}) as TObject
 }

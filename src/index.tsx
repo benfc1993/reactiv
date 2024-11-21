@@ -51,8 +51,14 @@ const Input = () => {
 
   return (
     <div>
-      <div onClick={() => (ref.current += 1)}>change ref</div>
-      <div onClick={() => console.log(ref.current)}>log ref</div>
+      <div
+        onClick={() => {
+          if (ref.current) ref.current += 1
+        }}
+      >
+        change ref
+      </div>
+      )<div onClick={() => console.log(ref.current)}>log ref</div>
       <input
         type='text'
         value={value}
@@ -61,17 +67,33 @@ const Input = () => {
         }}
       />
       <TextSplit text={value} />
-      {ref?.current > 1 && <p>test</p>}
+      {ref.current && ref.current > 1 && <p>test</p>}
     </div>
+  )
+}
+
+const ListItem = () => {
+  const [count, setCount] = useState(0)
+  return (
+    <>
+      <button onClick={() => setCount((current) => current + 1)}>button</button>
+      <>
+        <p>ListItem-{count}</p>
+      </>
+      <p>{count < 10 ? 'test' : null}</p>
+    </>
   )
 }
 const ParentToPassDown = () => {
   const [count, setCount] = useState(1)
   return (
-    <div>
-      passing down {count}
-      <button onClick={() => setCount((current) => current + 1)}>change</button>
-      <Testing count={count} />
+    <div style={{ width: 100, fontSize: 20 }}>
+      <button onClick={() => setCount((current) => current + 1)}>
+        add item
+      </button>
+      {Array.from({ length: count }).map((_, i) => (
+        <ListItem key={`ListItem-${i}`} />
+      ))}
     </div>
   )
 }
@@ -79,7 +101,7 @@ const ParentToPassDown = () => {
 const App = () => (
   <div draggable>
     {/* <TextSplit text="asd" /> */}
-    {/* <ParentToPassDown /> */}
+    <ParentToPassDown />
     <Testing key='i-made-this' />
     {/* <h2>Hello React!</h2> */}
     {/* <Testing key="another" /> */}

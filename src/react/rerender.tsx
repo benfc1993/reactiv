@@ -9,22 +9,27 @@ import {
 } from './globalState'
 import { reconcile } from './reconciliation/reconcile'
 import { render } from './render'
-import { ReactNode } from './types'
+import { ReactivNode } from './types'
 
 export async function rerender(
-  Component: (...args: any[]) => ReactNode,
+  Component: (...args: any[]) => any,
   props: Record<string, any>
 ) {
   renderState.renderRunning = true
   const state = map.get(props.key)
+  if (!state || !state.el) return
+
   hookIndex.value = 0
-  reconcile(state.el, <Component {...props} key={state.props.key} />)
-  globalKey.value = undefined
+  reconcile(
+    state.el,
+    (<Component {...props} key={state.props.key} />) as unknown as ReactivNode
+  )
+  globalKey.value = ''
 
   if (renderQueue.length > 0) {
-    return renderQueue.shift()()
+    return renderQueue.shift()?.()
   }
-  render(state.el, state.el.ref.parentElement)
+  render(state.el, state.el.ref?.parentElement!)
   renderState.renderRunning = false
   showAllMessages()
   commitTree()
