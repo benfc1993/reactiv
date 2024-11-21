@@ -1,5 +1,63 @@
 "use strict";
 (() => {
+  // src/react/globalState.ts
+  var map = /* @__PURE__ */ new Map();
+  var keys = [];
+  var globalKey = { value: "" };
+  var hookIndex = { value: 0 };
+  var renderState = { initialRender: false, renderRunning: false };
+  var renderQueue = [];
+  var addToRenderQueue = (callback) => {
+    renderQueue.push(callback);
+    if (renderQueue.length && !renderState.initialRender && !renderState.renderRunning)
+      renderQueue.shift()?.();
+  };
+
+  // src/react/render.tsx
+  function render(el, container) {
+    renderState.renderRunning = true;
+    if (!el) return;
+    let domEl;
+    if (typeof el === "string" || typeof el === "number") {
+      domEl = document.createTextNode(el);
+      container.appendChild(domEl);
+      return;
+    }
+    domEl = el.isComponent || el.tag === "FRAGMENT" ? container : document.createElement(el.tag);
+    if (el.props && "key" in el.props) {
+      const state = map.get(el.props.key);
+      if (state?.el) {
+        state.el.ref = domEl;
+        domEl.setAttribute("data-key", state.key);
+      }
+    }
+    if (!el.isComponent) {
+      if (el.props && "ref" in el.props && "current" in el.props.ref) {
+        el.props.ref.current = domEl;
+      }
+      if (el.props && "className" in el.props) {
+        domEl.classList.add(el.props.className.split(" "));
+      }
+      let elProps = el.props ? Object.keys(el.props) : null;
+      if (elProps && elProps.length > 0) {
+        elProps.forEach((prop) => domEl[prop] = el.props[prop]);
+      }
+    }
+    if (el.children && el.children.length > 0) {
+      el.children.flatMap((child) => child).forEach((node) => render(node, domEl));
+    }
+    if (el.isComponent || el.tag === "FRAGMENT") {
+      el.ref = el.children[0].ref;
+      return;
+    }
+    if (!el.isComponent && el.ref && container.contains(el.ref)) {
+      container.replaceChild(domEl, el.ref);
+    } else {
+      container.appendChild(domEl);
+    }
+    el.ref = domEl;
+  }
+
   // src/devTools/ui.ts
   var UI = {
     devToggle: (() => {
@@ -185,75 +243,6 @@
       const child = node.children[i];
       resetNodes(child);
     }
-  }
-
-  // src/react/globalState.ts
-  var map = /* @__PURE__ */ new Map();
-  var keys = [];
-  var globalKey = { value: "" };
-  var hookIndex = { value: 0 };
-  var renderState = { initialRender: false, renderRunning: false };
-  var renderQueue = [];
-  var addToRenderQueue = (callback) => {
-    renderQueue.push(callback);
-    if (renderQueue.length && !renderState.initialRender && !renderState.renderRunning)
-      renderQueue.shift()?.();
-  };
-
-  // src/react/render.tsx
-  function createApplication(root, RootComponent) {
-    renderState.initialRender = true;
-    render(RootComponent(), root);
-    renderState.initialRender = false;
-    globalKey.value = "";
-    hookIndex.value = 0;
-    console.log(map);
-    commitTree();
-    if (renderQueue.length) renderQueue.shift()?.();
-    renderState.renderRunning = false;
-  }
-  function render(el, container) {
-    renderState.renderRunning = true;
-    if (!el) return;
-    let domEl;
-    if (typeof el === "string" || typeof el === "number") {
-      domEl = document.createTextNode(el);
-      container.appendChild(domEl);
-      return;
-    }
-    domEl = el.isComponent || el.tag === "FRAGMENT" ? container : document.createElement(el.tag);
-    if (el.props && "key" in el.props) {
-      const state = map.get(el.props.key);
-      if (state?.el) {
-        state.el.ref = domEl;
-        domEl.setAttribute("data-key", state.key);
-      }
-    }
-    if (!el.isComponent) {
-      if (el.props && "ref" in el.props && "current" in el.props.ref) {
-        el.props.ref.current = domEl;
-      }
-      if (el.props && "className" in el.props) {
-        domEl.classList.add(el.props.className.split(" "));
-      }
-      let elProps = el.props ? Object.keys(el.props) : null;
-      if (elProps && elProps.length > 0) {
-        elProps.forEach((prop) => domEl[prop] = el.props[prop]);
-      }
-    }
-    if (el.children && el.children.length > 0) {
-      el.children.flatMap((child) => child).forEach((node) => render(node, domEl));
-    }
-    if (el.isComponent || el.tag === "FRAGMENT") {
-      el.ref = el.children[0].ref;
-      return;
-    }
-    if (!el.isComponent && el.ref && container.contains(el.ref)) {
-      container.replaceChild(domEl, el.ref);
-    } else {
-      container.appendChild(domEl);
-    }
-    el.ref = domEl;
   }
 
   // src/react/reconciliation/createNewComponent.ts
@@ -497,6 +486,19 @@
       if (!isUseRefHook(hook)) return;
       return hook;
     })();
+  }
+
+  // src/react/createApplication.ts
+  function createApplication(root, RootComponent) {
+    renderState.initialRender = true;
+    render(RootComponent(), root);
+    renderState.initialRender = false;
+    globalKey.value = "";
+    hookIndex.value = 0;
+    console.log(map);
+    commitTree();
+    if (renderQueue.length) renderQueue.shift()?.();
+    renderState.renderRunning = false;
   }
 
   // src/react/elementEvents.ts

@@ -1,27 +1,5 @@
 import type { ReactivNode } from '.'
-import { commitTree } from '../devTools'
-import {
-  globalKey,
-  hookIndex,
-  map,
-  renderQueue,
-  renderState,
-} from './globalState'
-
-export function createApplication(
-  root: HTMLElement,
-  RootComponent: () => JSX.Element
-) {
-  renderState.initialRender = true
-  render(RootComponent() as unknown as ReactivNode, root)
-  renderState.initialRender = false
-  globalKey.value = ''
-  hookIndex.value = 0
-  console.log(map)
-  commitTree()
-  if (renderQueue.length) renderQueue.shift()?.()
-  renderState.renderRunning = false
-}
+import { map, renderState } from './globalState'
 
 export function render(el: ReactivNode, container: HTMLElement) {
   renderState.renderRunning = true
