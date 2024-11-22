@@ -14,3 +14,13 @@ export function deepClone<TObject extends Record<string, any>>(
     {}
   ) as TObject
 }
+
+export function isPrimitiveValue(value: unknown): boolean {
+  return (
+    typeof value === 'string' ||
+    typeof value === 'number' ||
+    typeof value === 'boolean' ||
+    value === null ||
+    typeof value === 'undefined'
+  )
+}

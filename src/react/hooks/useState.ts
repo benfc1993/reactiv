@@ -32,15 +32,15 @@ export function useState<TState>(
       await addAction(
         cache,
         Action.STATE_CHANGE,
-        `State updated from ${prevValue} to ${hook.value}`,
+        `State updated from ${prevValue instanceof Object ? JSON.stringify(prevValue) : prevValue} to ${prevValue instanceof Object ? JSON.stringify(hook.value) : hook.value}`,
         true
       )
-      addToRenderQueue(() =>
+      addToRenderQueue(() => {
         rerender(cache.component, {
           ...cache.props,
           key: internalKey,
         })
-      )
+      })
     }
     if (!isUseStateHook(hook))
       throw Error('Cached useState hook invalid format')

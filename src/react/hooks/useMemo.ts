@@ -2,24 +2,22 @@ import { addAction, Action } from '../../devTools'
 import { hookIndex, globalKey, map } from '../globalState'
 import { isUseMemoHook } from '../types'
 
-export function useMemo<TValue>(
-  callback: () => TValue,
-  dependencies: any[] = null
-) {
+export function useMemo<TValue>(callback: () => TValue, dependencies?: any[]) {
   const idx = hookIndex.value
   const internalKey = globalKey.value
   hookIndex.value += 1
 
   return (() => {
     const cache = map.get(internalKey)
-    if (!cache.hooks[idx])
-      cache.hooks[idx] = { dependencies: null, value: null }
+    if (!cache) throw new Error('Cache not found for useMemo')
+    if (!cache.hooks[idx]) cache.hooks[idx] = { value: null }
 
     const hook = cache.hooks[idx]
 
     if (!isUseMemoHook(hook)) return
     if (
-      hook.dependencies === null ||
+      !dependencies ||
+      !hook.dependencies ||
       hook.dependencies.some((dep, i) => dep !== dependencies[i])
     ) {
       hook.value = callback()

@@ -2,13 +2,13 @@ import { UI } from './ui'
 import { NodeCache } from '../react'
 
 export enum Action {
-  ADDED_COMPONENT,
-  STATE_CHANGE,
-  REF_CHANGED,
-  DEPENDENCY_CHANGE,
-  RE_RENDER,
-  REMOVED_COMPONENT,
-  NONE,
+  ADDED_COMPONENT = 'ADDED',
+  STATE_CHANGE = 'STATE_CHANGE',
+  REF_CHANGED = 'REF_CHANGE',
+  DEPENDENCY_CHANGE = 'DEPENDENCY_CHANGE',
+  RE_RENDER = 'RE_RENDER',
+  REMOVED_COMPONENT = 'REMOVED',
+  NONE = 'NONE',
 }
 
 export type QueuedAction = {
@@ -51,8 +51,8 @@ export async function addAction(
     const action = { cache, actionType, message, promise, resolve }
     showMessage(action)
     await action.promise
+    pause.actions.shift()
     if (pause.showAll && pause.actions.length >= 1) {
-      pause.actions.shift()
       if (pause.actions.length) {
         pause.actions[0]()
       } else {
@@ -73,16 +73,17 @@ function showMessage(action: QueuedAction) {
     return
   }
   const { message, actionType, resolve, cache } = action
+  const actionIndex = Object.values(Action).indexOf(actionType)
 
   UI.notification.innerText = message
   UI.notification.classList.add(
     'update-message',
-    `update-message-${actionType}`
+    `update-message-${actionIndex}`
   )
 
   pause.toClear = cache.el?.ref
 
-  cache.el?.ref?.classList.add(`update`, `update-${actionType}`)
+  cache.el?.ref?.classList.add(`update`, `update-${actionIndex}`)
   waitForNext(resolve)
 }
 
