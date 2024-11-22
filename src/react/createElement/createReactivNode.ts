@@ -16,6 +16,7 @@ export function createBlankReactivComponentNode(
       children,
       ...props,
     }),
+    hooks: [],
     key,
     ref: null,
     rerender: true,

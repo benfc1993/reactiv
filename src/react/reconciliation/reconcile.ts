@@ -1,5 +1,5 @@
 import { addToDevTree, commitNode, Action } from '../../devTools'
-import { map } from '../globalState'
+import { nodePointers } from '../globalState'
 import { ReactivNode } from '../types'
 import { isPrimitiveValue } from '../utils'
 import { createNewComponent } from './createNewComponent'
@@ -21,14 +21,11 @@ export function reconcile(before: ReactivNode, after: ReactivNode) {
 
     addedkeys.delete(after.key)
 
+    const key = before.key
+    nodePointers.set(key, before)
     current.children = [
       mountComponent(after, { ...after.props }, before.key),
     ].flatMap((child) => child)
-
-    const key = before.key
-    const cache = map.get(key)
-
-    if (cache) cache.el = before
 
     before.props = { ...after.props }
     after.key = before.key
@@ -68,13 +65,12 @@ export function reconcile(before: ReactivNode, after: ReactivNode) {
       beforeChild.tag !== afterChild.tag
     ) {
       if ((beforeChild && !afterChild) || beforeChild.tag !== afterChild.tag) {
-        console.log('Unmount null child')
         unmountComponent(beforeChild)
       }
       if (afterChild) {
         before.children[i] = afterChild
         if (beforeChild?.isComponent) {
-          map.delete(beforeChild.props.key)
+          nodePointers.delete(beforeChild.props.key)
         }
         if (afterChild.isComponent) createNewComponent(afterChild)
         reconcile(before.children[i], afterChild)

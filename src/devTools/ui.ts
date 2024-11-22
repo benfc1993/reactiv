@@ -1,4 +1,4 @@
-import { getVDomRoot, map } from '../react/globalState'
+import { getVDomRoot, nodePointers } from '../react/globalState'
 import { getNodeTree } from './nodeTree'
 import { pause } from './step'
 import '@andypf/json-viewer'

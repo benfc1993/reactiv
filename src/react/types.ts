@@ -9,6 +9,7 @@ export type ReactivNodeBase = {
 export type ReactivElementNode = ReactivNodeBase & { isComponent: false }
 export type ReactivComponentNode = ReactivNodeBase & {
   isComponent: true
+  hooks: CachedHook[]
   key: string
   fn: (props: Record<string, any>) => ReactivNode
 }
@@ -74,7 +75,7 @@ export function isUseMemoHook(hook: any): hook is UseMemoHook {
 }
 
 export type UseContextHook = {
-  context: ReactivNode | null
+  context: string | null
   cleanup?: () => void
 }
 
@@ -82,7 +83,7 @@ export function isUseContextHook(hook: any): hook is UseContextHook {
   const keys = Object.keys(hook)
   return (
     keys.length === 2 &&
-    (hook?.context === null || 'tag' in hook?.context) &&
+    (hook?.context === null || typeof hook?.context === 'string') &&
     (!hook?.cleanup || typeof hook?.cleanup === 'function')
   )
 }

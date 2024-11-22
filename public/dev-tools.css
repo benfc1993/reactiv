@@ -30,7 +30,15 @@ body {
   background-color: #ffff0020;
   color: #f9f9f9;
 }
+.update-message-2 {
+  background-color: #ffff0020;
+  color: #f9f9f9;
+}
 
+.update-message-3 {
+  background-color: #ffff0020;
+  color: #f9f9f9;
+}
 .update-message-4 {
   background-color: #ff5500;
   color: #f9f9f9;
@@ -42,17 +50,32 @@ body {
   background-color: #dd3636;
   color: #f9f9f9;
 }
+.update-message-6 {
+  background-color: #dd3636;
+  color: #f9f9f9;
+}
 
 .update {
   border-radius: 5px;
 }
+.update-0 {
+  border: 2px yellow solid;
+}
 .update-1 {
+  border: 2px yellow solid;
+}
+.update-2 {
+  border: 2px yellow solid;
+}
+.update-3 {
   border: 2px yellow solid;
 }
 .update-4 {
   border: 2px #ff5500 solid;
 }
-
 .update-5 {
+  border: 2px #dd3636 solid;
+}
+.update-6 {
   border: 2px #dd3636 solid;
 }

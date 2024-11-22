@@ -1,5 +1,5 @@
 import { addAction, Action } from '../../devTools'
-import { hookIndex, globalKey, map } from '../globalState'
+import { hookIndex, globalKey, nodePointers } from '../globalState'
 import { isUseMemoHook } from '../types'
 
 export function useMemo<TValue>(callback: () => TValue, dependencies?: any[]) {
@@ -8,7 +8,7 @@ export function useMemo<TValue>(callback: () => TValue, dependencies?: any[]) {
   hookIndex.value += 1
 
   return (() => {
-    const cache = map.get(internalKey)
+    const cache = nodePointers.get(internalKey)
     if (!cache) throw new Error('Cache not found for useMemo')
     if (!cache.hooks[idx]) cache.hooks[idx] = { value: null }
 

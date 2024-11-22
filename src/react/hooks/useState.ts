@@ -1,5 +1,11 @@
 import { Action, addAction } from '../../devTools'
-import { hookIndex, globalKey, map, addToRenderQueue } from '../globalState'
+import {
+  hookIndex,
+  globalKey,
+  nodePointers,
+  addToRenderQueue,
+  scheduler,
+} from '../globalState'
 import { rerender } from '../rerender'
 import { isUseStateHook } from '../types'
 
@@ -11,7 +17,7 @@ export function useState<TState>(
   hookIndex.value += 1
 
   return (() => {
-    const cache = map.get(internalKey)
+    const cache = nodePointers.get(internalKey)
 
     if (!cache) throw new Error('Cache not found for useState')
     if (!cache?.hooks[idx])
@@ -35,8 +41,8 @@ export function useState<TState>(
         `State updated from ${prevValue instanceof Object ? JSON.stringify(prevValue) : prevValue} to ${prevValue instanceof Object ? JSON.stringify(hook.value) : hook.value}`,
         true
       )
-      addToRenderQueue(() => {
-        rerender(cache.component, {
+      scheduler.add(() => {
+        rerender(cache.fn, {
           ...cache.props,
           key: internalKey,
         })

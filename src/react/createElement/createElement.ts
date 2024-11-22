@@ -1,15 +1,17 @@
 import { addToDevTree, commitNode, Action } from '../../devTools'
 import {
   hookIndex,
-  map,
+  nodePointers,
   globalKey,
   getVDomRoot,
   setVDomRoot,
 } from '../globalState'
 import { renderState } from '../globalState'
-import { ReactivElementNode, ReactivNode } from '../types'
+import { ReactivComponentNode, ReactivElementNode, ReactivNode } from '../types'
 import { createBlankReactivComponentNode } from './createReactivNode'
 import { sanitiseElementProps } from './sanitiseProps'
+
+const providers: Record<string, ReactivComponentNode> = {}
 
 const React = {
   createElement: (
@@ -20,8 +22,6 @@ const React = {
     if (typeof tag === 'function') {
       const key = props?.key ?? Math.random().toString()
       const el = createBlankReactivComponentNode(key, tag, props, children)
-
-      const cache = map.get(key)
 
       hookIndex.value = 0
       globalKey.value = key
@@ -34,14 +34,7 @@ const React = {
 
       addToDevTree(key, tag.name, Action.ADDED_COMPONENT)
 
-      map.set(key, {
-        ...cache,
-        key,
-        props: el.props,
-        el,
-        hooks: [],
-        component: el.fn,
-      })
+      nodePointers.set(key, el)
 
       const componentResponse = tag(el.props)
 

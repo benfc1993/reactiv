@@ -1,4 +1,4 @@
-import { hookIndex, globalKey, map } from '../globalState'
+import { hookIndex, globalKey, nodePointers } from '../globalState'
 import { isUseRefHook } from '../types'
 
 export function useRef<TValue>(initialValue: TValue): { current: TValue } {
@@ -7,12 +7,14 @@ export function useRef<TValue>(initialValue: TValue): { current: TValue } {
   hookIndex.value += 1
 
   return (() => {
-    const cache = map.get(internalKey)
-    if (!cache.hooks[idx]) {
+    const cache = nodePointers.get(internalKey)
+
+    if (!cache) throw new Error('Cache not found for useRef')
+    if (!cache?.hooks[idx]) {
       cache.hooks[idx] = { current: initialValue }
     }
     const hook = cache.hooks[idx]
-    if (!isUseRefHook(hook)) return
+    if (!isUseRefHook(hook)) return { current: undefined }
 
     return hook
   })()

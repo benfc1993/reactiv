@@ -1,5 +1,5 @@
 import type { ReactivNode } from '.'
-import { map, renderState } from './globalState'
+import { nodePointers, renderState } from './globalState'
 import { isPrimitiveValue } from './utils'
 
 export function render(el: ReactivNode, container: HTMLElement) {
@@ -21,9 +21,9 @@ export function render(el: ReactivNode, container: HTMLElement) {
         : document.createElement(el.tag)
 
   if (el.props && 'key' in el.props) {
-    const state = map.get(el.props.key)
-    if (state?.el) {
-      state.el.ref = domEl
+    const state = nodePointers.get(el.props.key)
+    if (state) {
+      state.ref = domEl
     }
   }
 

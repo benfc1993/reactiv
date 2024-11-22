@@ -1,12 +1,6 @@
-import { map } from '../globalState'
-import { ReactivComponentNode, ReactivNode } from '../types'
+import { nodePointers } from '../globalState'
+import { ReactivComponentNode } from '../types'
 
 export function createNewComponent(node: ReactivComponentNode) {
-  map.set(node.props.key, {
-    component: node.fn,
-    key: node.props.key,
-    hooks: [],
-    props: node.props,
-    el: null,
-  })
+  nodePointers.set(node.props.key, null)
 }

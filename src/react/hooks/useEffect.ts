@@ -1,5 +1,5 @@
 import { Action, addAction } from '../../devTools'
-import { hookIndex, globalKey, map } from '../globalState'
+import { hookIndex, globalKey, nodePointers } from '../globalState'
 import { isUseEffectHook, UseEffectHook } from '../types'
 
 export function useEffect(
@@ -11,7 +11,7 @@ export function useEffect(
   hookIndex.value += 1
 
   return (() => {
-    const cache = map.get(internalKey)
+    const cache = nodePointers.get(internalKey)
 
     if (!cache) throw new Error('no cache found for useEffect')
 

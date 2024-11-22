@@ -1,5 +1,5 @@
 import { UI } from './ui'
-import { NodeCache } from '../react'
+import { ReactivComponentNode } from '../react'
 
 export enum Action {
   ADDED_COMPONENT = 'ADDED',
@@ -12,7 +12,7 @@ export enum Action {
 }
 
 export type QueuedAction = {
-  cache: NodeCache
+  cache: ReactivComponentNode
   actionType: Action
   message: string
   promise: Promise<void>
@@ -36,7 +36,7 @@ export const pause: {
 }
 
 export async function addAction(
-  cache: NodeCache,
+  cache: ReactivComponentNode,
   actionType: Action,
   message: string,
   show: boolean = false
@@ -81,9 +81,9 @@ function showMessage(action: QueuedAction) {
     `update-message-${actionIndex}`
   )
 
-  pause.toClear = cache.el?.ref
+  pause.toClear = cache.ref
 
-  cache.el?.ref?.classList.add(`update`, `update-${actionIndex}`)
+  cache.ref?.classList.add(`update`, `update-${actionIndex}`)
   waitForNext(resolve)
 }
 

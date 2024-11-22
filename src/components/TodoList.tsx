@@ -1,4 +1,5 @@
-import React from '../react'
+import { Provider } from '..'
+import React, { useContext } from '../react'
 import { useState } from '../react'
 import { TodoItem } from './TodoItem'
 
@@ -19,6 +20,8 @@ export function TodoList() {
   ])
 
   const [text, setText] = useState('')
+  const value = useContext(Provider)
+  console.log({ value })
 
   function addTask(text: string) {
     const newTask = {
@@ -55,7 +58,6 @@ export function TodoList() {
       </button>
       <div className='todo-list'>
         {tasks.map((task) => {
-          console.log({ ...tasks })
           return (
             <TodoItem
               key={`${task.text}-${task.id}`}

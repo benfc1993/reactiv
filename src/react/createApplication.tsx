@@ -4,9 +4,10 @@ import {
   renderState,
   globalKey,
   hookIndex,
-  map,
+  nodePointers,
   renderQueue,
   getVDomRoot,
+  scheduler,
 } from './globalState'
 import { render } from './render'
 import { ReactivNode } from './types'
@@ -16,7 +17,9 @@ export function createApplication(
   RootComponent: () => JSX.Element
 ) {
   renderState.initialRender = true
-  render((<RootComponent />) as unknown as ReactivNode, root)
+  scheduler.add(() =>
+    render((<RootComponent />) as unknown as ReactivNode, root)
+  )
   renderState.initialRender = false
   globalKey.value = ''
   hookIndex.value = 0
@@ -24,4 +27,5 @@ export function createApplication(
   if (renderQueue.length) renderQueue.shift()?.()
   renderState.renderRunning = false
   console.log('Virtual Dom: ', getVDomRoot())
+  console.log(nodePointers)
 }

@@ -1,17 +1,27 @@
-import { hookIndex, globalKey, map, getVDomRoot } from '../globalState'
-import { isUseContextHook, ReactivNode } from '../types'
+import { hookIndex, globalKey, nodePointers, getVDomRoot } from '../globalState'
+import { isUseContextHook, ReactivComponentNode, ReactivNode } from '../types'
+import { scheduleUseContext } from './scheduleUseContext'
 
 function checkChild(
   node: ReactivNode,
-  // context: (props: Record<string, any>) => ReactivNode
-  context: string
+  target: ReactivNode,
+  context: () => ReactivNode,
+  contextNode: ReactivComponentNode | null = null
 ) {
-  console.log('checkChild')
-
-  if (node.isComponent && node.tag === context) {
-    return node
+  if (node.isComponent && node.fn === context) {
+    contextNode = node
   }
-  return node.children.forEach((child) => checkChild(child, context))
+
+  if (node === target) {
+    return contextNode
+  }
+
+  for (let i = 0; i < node.children?.length; i++) {
+    const child = node.children[i]
+    const res = checkChild(child, target, context, contextNode)
+    if (res) contextNode = res
+  }
+  return contextNode
 }
 
 export function useContext(context: (...args: any[]) => ReactivNode) {
@@ -19,44 +29,32 @@ export function useContext(context: (...args: any[]) => ReactivNode) {
   const internalKey = globalKey.value
   hookIndex.value += 1
   return (() => {
-    const cache = map.get(internalKey)
+    const cache = nodePointers.get(internalKey)
     if (!cache) throw new Error('cache not found for useContext')
     if (!cache.hooks[idx]) {
-      const contextNode = checkChild(getVDomRoot()!, context.name)
+      scheduleUseContext(() => {
+        const contextNode = checkChild(getVDomRoot()!, cache, context)
+        contextNode?.props.__consumers.add(cache)
+        if (!contextNode) throw new Error('Provider not found')
 
-      // let parent = cache.el?.parent
-      //
-      // console.log(cache.el)
-      // let contextNode = null
-      // while (parent) {
-      //   if (parent.isComponent && parent.fn === context) {
-      //     contextNode = parent
-      //     break
-      //   }
-      //   parent = parent.parent
-      // }
-      console.log({ contextNode })
-
-      if (
-        contextNode === null ||
-        !contextNode?.props ||
-        !('__consumers' in contextNode?.props)
-      )
-        throw new Error(
-          'Component passed to useContext is not a context Provider'
-        )
-
-      contextNode?.props.__consumers.add(cache.el)
-
-      cache.hooks[idx] = {
-        context: contextNode,
-        cleanup() {
-          contextNode?.props.__consumers.delete(cache.el)
-        },
-      }
+        cache.hooks[idx] = {
+          context: contextNode.key,
+          cleanup() {
+            contextNode?.props.__consumers.delete(cache)
+          },
+        }
+      })
+      return
     }
+    const hook = cache.hooks[idx]
+    if (!isUseContextHook(hook)) return
+
+    if (hook.context === null)
+      throw new Error(
+        'Component passed to useContext is not a context Provider'
+      )
 
     if (!isUseContextHook(cache.hooks[idx])) return undefined
-    return cache.hooks[idx].context?.props?.value
+    return nodePointers.get(cache.hooks[idx].context!)?.props?.value
   })()
 }

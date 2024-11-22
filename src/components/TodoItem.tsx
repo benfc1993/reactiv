@@ -1,4 +1,4 @@
-import React, { useState } from '../react'
+import React, { useEffect, useState } from '../react'
 import { Todo } from './TodoList'
 
 type TodoItemProps = {
@@ -13,6 +13,9 @@ export function TodoItem(props: TodoItemProps) {
   function handleChange() {
     toggleCompleted(task.id)
   }
+  useEffect(() => {
+    if (task.completed) setCount(100)
+  }, [task.completed])
 
   return (
     <div className='todo-item'>
