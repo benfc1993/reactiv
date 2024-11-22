@@ -71,8 +71,15 @@ export function commitTree() {
   console.log(nodeTree)
 }
 
+export function getNodeTree() {
+  return nodeTree.current
+}
+
 function resetNodes(node: DevTreeNode) {
   node.action = Action.NONE
+  node.children = node.children.filter(
+    (child) => child.action !== Action.REMOVED_COMPONENT
+  )
 
   for (let i = 0; i < node.children.length; i++) {
     const child = node.children[i]

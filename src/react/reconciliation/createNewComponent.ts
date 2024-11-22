@@ -1,5 +1,5 @@
 import { map } from '../globalState'
-import { ReactivComponentNode } from '../types'
+import { ReactivComponentNode, ReactivNode } from '../types'
 
 export function createNewComponent(node: ReactivComponentNode) {
   map.set(node.props.key, {

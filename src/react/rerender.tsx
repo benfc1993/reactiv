@@ -6,6 +6,7 @@ import {
   hookIndex,
   renderQueue,
   renderState,
+  getVDomRoot,
 } from './globalState'
 import { reconcile } from './reconciliation/reconcile'
 import { render } from './render'
@@ -29,8 +30,9 @@ export async function rerender(
   if (renderQueue.length > 0) {
     return renderQueue.shift()?.()
   }
+  commitTree()
   render(state.el, state.el.ref?.parentElement!)
   renderState.renderRunning = false
+  console.log(map)
   showAllMessages()
-  commitTree()
 }

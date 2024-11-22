@@ -4,7 +4,7 @@ import { isUseEffectHook, UseEffectHook } from '../types'
 
 export function useEffect(
   callback: () => void | (() => void),
-  dependencies: any[] = null
+  dependencies?: any[]
 ) {
   const idx = hookIndex.value
   const internalKey = globalKey.value
@@ -12,9 +12,11 @@ export function useEffect(
 
   return (() => {
     const cache = map.get(internalKey)
+
+    if (!cache) throw new Error('no cache found for useEffect')
+
     if (!cache.hooks[idx])
       cache.hooks[idx] = {
-        dependencies: null,
         cleanup: () => null,
       } as UseEffectHook
     const hook = cache.hooks[idx]
@@ -22,8 +24,9 @@ export function useEffect(
     if (!isUseEffectHook(hook)) return
 
     if (
-      hook.dependencies === null ||
-      hook?.dependencies?.some((dep, i) => dep !== dependencies[i])
+      !dependencies ||
+      !hook.dependencies ||
+      hook.dependencies.some((dep, i) => dep !== dependencies[i])
     ) {
       void addAction(
         cache,
