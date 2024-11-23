@@ -25,9 +25,11 @@ function checkChild(
   return contextNode
 }
 
+type Provider = { Provider: (...props: any[]) => any }
+
 export function useContext<
-  TContext extends (props: any) => any,
-  TValue = Parameters<TContext>[0]['value'],
+  TContext extends Provider,
+  TValue = Parameters<TContext['Provider']>[0]['value'],
 >(context: TContext) {
   const idx = hookIndex.value
   const internalKey = globalKey.value
@@ -39,7 +41,7 @@ export function useContext<
 
     if (!cache.hooks[idx]) {
       cache.hooks[idx] = {
-        value: initialContextValues.get(context),
+        value: initialContextValues.get(context.Provider),
         contextNode: null,
       }
     }
@@ -50,7 +52,7 @@ export function useContext<
 
     if (!hook.contextNode) {
       scheduleUseContext(() => {
-        const contextNode = checkChild(getVDomRoot()!, cache, context)
+        const contextNode = checkChild(getVDomRoot()!, cache, context.Provider)
         if (!contextNode || !('value' in contextNode.props))
           throw new Error(
             'Component passed to useContext is not a context Provider'

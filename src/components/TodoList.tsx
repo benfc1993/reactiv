@@ -1,4 +1,4 @@
-import { Provider } from '..'
+import { MyContext } from '..'
 import React, { useContext } from '../react'
 import { useState } from '../react'
 import { TodoItem } from './TodoItem'
@@ -20,7 +20,7 @@ export function TodoList() {
   ])
 
   const [text, setText] = useState('')
-  const value = useContext(Provider)
+  const value = useContext(MyContext)
   console.log({ value })
 
   function addTask(text: string) {
@@ -48,6 +48,7 @@ export function TodoList() {
   }
   return (
     <div className='todo-container'>
+      <p>{value}</p>
       <input
         className='input-todo'
         value={text}

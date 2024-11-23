@@ -1,7 +1,4 @@
-import { globalKey, nodePointers, scheduler } from '../globalState'
-import { useEffect, useMemo } from '../hooks'
-import { rerender } from '../rerender'
-import { ReactivComponentNode, ReactivNode } from '../types'
+import { ReactivNode } from '../types'
 
 export const initialContextValues = new Map()
 
