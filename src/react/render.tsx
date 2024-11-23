@@ -6,61 +6,60 @@ export function render(el: ReactivNode, container: HTMLElement) {
   renderState.renderRunning = true
   if (!el) return
   let domEl: Text | HTMLElement
-
-  if (typeof el === 'string' || typeof el === 'number') {
-    domEl = document.createTextNode(el)
-    container.appendChild(domEl)
-    return
-  }
+  // if (el.rerender) console.log(el.tag, el.rerender, el.ref, container)
 
   domEl =
     el.isComponent || el.tag === 'FRAGMENT'
       ? container
       : !el.rerender && el.ref
         ? el.ref
-        : document.createElement(el.tag)
+        : el.tag === 'TEXT'
+          ? document.createTextNode(el.props.value)
+          : document.createElement(el.tag)
 
-  if (el.props && 'key' in el.props) {
-    const state = nodePointers.get(el.props.key)
-    if (state) {
-      state.ref = domEl
+  if (!(domEl instanceof Text)) {
+    if (!el.isComponent) {
+      if (el.props && 'ref' in el.props && 'current' in el.props.ref) {
+        el.props.ref.current = domEl
+      }
+
+      if (el.props && 'className' in el.props && el.props.className !== '') {
+        domEl.classList.add(el.props.className.split(' '))
+      }
+
+      let elProps = el.props ? Object.keys(el.props) : null
+      if (elProps && elProps.length > 0 && el.tag !== 'TEXT') {
+        elProps.forEach((prop) => {
+          if (!el.isComponent && prop.startsWith('on')) {
+            domEl[prop as keyof GlobalEventHandlers] = el.props[prop]
+            return
+          }
+
+          domEl.setAttribute(prop, el.props[prop])
+        })
+      }
+    }
+
+    if (el.children && el.children.length > 0) {
+      el.children
+        .flatMap((child) => child)
+        .forEach((node) => {
+          render(node, domEl)
+        })
     }
   }
 
-  if (!el.isComponent) {
-    if (el.props && 'ref' in el.props && 'current' in el.props.ref) {
-      el.props.ref.current = domEl
-    }
-
-    if (el.props && 'className' in el.props && el.props.className !== '') {
-      domEl.classList.add(el.props.className.split(' '))
-    }
-
-    let elProps = el.props ? Object.keys(el.props) : null
-    if (elProps && elProps.length > 0) {
-      elProps.forEach((prop) => {
-        if (!el.isComponent && prop.startsWith('on')) {
-          domEl[prop as keyof GlobalEventHandlers] = el.props[prop]
-          return
-        }
-
-        domEl.setAttribute(prop, el.props[prop])
-      })
-    }
-  }
-  if (el.children && el.children.length > 0) {
-    el.children
-      .flatMap((child) => child)
-      .forEach((node) => {
-        if (isPrimitiveValue(node) && !el.rerender) return
-        render(node, domEl)
-      })
-  }
   if (isComponentNode(el) || el.tag === 'FRAGMENT') {
-    el.ref = el.children[0].ref
+    if (el.tag === 'FRAGMENT') {
+      console.log('render FRAGMENT:', { ...el })
+      console.log(el.children.flatMap((child) => child)[0].ref)
+    }
+    el.ref = el.children.flatMap((child) => child)[0].ref
+    console.log(el.ref)
     el.rerender = false
     return
   }
+
   if (el.rerender) {
     el.rerender = false
     if (!el.isComponent && el.ref && container.contains(el.ref)) {

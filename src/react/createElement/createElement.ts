@@ -7,11 +7,10 @@ import {
   setVDomRoot,
 } from '../globalState'
 import { renderState } from '../globalState'
-import { ReactivComponentNode, ReactivElementNode, ReactivNode } from '../types'
+import { ReactivElementNode, ReactivNode } from '../types'
 import { createBlankReactivComponentNode } from './createReactivNode'
+import { sanitiseChildren } from './sanitiseChildren'
 import { sanitiseElementProps } from './sanitiseProps'
-
-const providers: Record<string, ReactivComponentNode> = {}
 
 const React = {
   createElement: (
@@ -38,9 +37,11 @@ const React = {
 
       const componentResponse = tag(el.props)
 
-      el.children = Array.isArray(componentResponse)
-        ? (componentResponse as Array<ReactivNode>)
-        : [componentResponse]
+      el.children = sanitiseChildren(
+        Array.isArray(componentResponse)
+          ? (componentResponse as Array<ReactivNode>)
+          : [componentResponse]
+      )
 
       commitNode()
 
@@ -50,7 +51,7 @@ const React = {
       tag: tag ?? 'FRAGMENT',
       isComponent: false,
       props: sanitiseElementProps(props),
-      children,
+      children: sanitiseChildren(children),
       ref: null,
       rerender: true,
     }

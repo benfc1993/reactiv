@@ -81,9 +81,11 @@ function showMessage(action: QueuedAction) {
     `update-message-${actionIndex}`
   )
 
-  pause.toClear = cache.ref
+  if (!(cache.ref instanceof Text)) {
+    pause.toClear = cache.ref
 
-  cache.ref?.classList.add(`update`, `update-${actionIndex}`)
+    cache.ref?.classList.add(`update`, `update-${actionIndex}`)
+  }
   waitForNext(resolve)
 }
 

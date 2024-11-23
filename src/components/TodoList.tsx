@@ -1,9 +1,14 @@
 import { MyContext } from '..'
-import React, { useContext } from '../react'
+import React, { ReactivNode, useContext } from '../react'
 import { useState } from '../react'
 import { TodoItem } from './TodoItem'
 
 export type Todo = { id: number; text: string; completed: boolean }
+
+const Test = (props: { children: ReactivNode }) => {
+  console.log({ props })
+  return <>{props.children}</>
+}
 
 export function TodoList() {
   const [tasks, setTasks] = useState<Todo[]>([
@@ -21,7 +26,6 @@ export function TodoList() {
 
   const [text, setText] = useState('')
   const value = useContext(MyContext)
-  console.log({ value })
 
   function addTask(text: string) {
     const newTask = {
@@ -46,9 +50,18 @@ export function TodoList() {
       })
     )
   }
+
+  /* TODO: Fix array rerender with no parent tag */
+
   return (
     <div className='todo-container'>
-      <p>{value}</p>
+      {Array.from({ length: 3 }).map((a, idx) => (
+        <p>{a}</p>
+      ))}
+      <Test>
+        <p>testing</p>
+      </Test>
+      {value}
       <input
         className='input-todo'
         value={text}

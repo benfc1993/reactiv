@@ -24,3 +24,9 @@ export function isPrimitiveValue(value: unknown): boolean {
     typeof value === 'undefined'
   )
 }
+
+export function primitiveValue(
+  value: unknown
+): value is string | number | boolean | null | undefined {
+  return isPrimitiveValue(value)
+}

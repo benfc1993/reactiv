@@ -40,15 +40,6 @@ export function reconcile(before: ReactivNode, after: ReactivNode) {
     const beforeChild = before.children[i]
     const afterChild = current.children[i]
 
-    // if both children are value types take the new value
-    if (isPrimitiveValue(beforeChild) && isPrimitiveValue(afterChild)) {
-      if (beforeChild !== afterChild) {
-        before.rerender = true
-        before.children[i] = afterChild
-      }
-      continue
-    }
-
     if (
       beforeChild?.props &&
       afterChild?.props &&
@@ -91,7 +82,7 @@ export function reconcile(before: ReactivNode, after: ReactivNode) {
 
       // If no key provided to list items rerender the entire list
       if (afterChild.some((child) => !child?.props?.key)) {
-        before.rerender = true
+        beforeChild.rerender = true
         ;(before.children[i] as unknown as ReactivNode[]) = afterChild.map(
           (child) =>
             ({
@@ -99,6 +90,9 @@ export function reconcile(before: ReactivNode, after: ReactivNode) {
               rerender: true,
             }) as ReactivNode
         )
+        beforeChild.map((bC) => {
+          unmountComponent(bC)
+        })
       } else {
         beforeChild.map((bC) => {
           const existingItem: ReactivNode | undefined = afterChild.find(

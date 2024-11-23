@@ -3,7 +3,7 @@ import { sanitiseComponentProps } from './sanitiseProps'
 
 export function createBlankReactivComponentNode(
   key: string,
-  tag: (props: Record<string, any>) => ReactivNode,
+  tag: <TProps = any>(props: TProps) => ReactivNode,
   props: Record<string, any>,
   children: ReactivNode[]
 ): ReactivComponentNode {

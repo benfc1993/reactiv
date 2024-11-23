@@ -2,7 +2,7 @@ export type ReactivNodeBase = {
   tag: string
   props: Record<string, any>
   children: ReactivNode[]
-  ref: HTMLElement | null
+  ref: HTMLElement | Text | null
   rerender: boolean
   isComponent: boolean
 }
