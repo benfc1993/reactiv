@@ -14,7 +14,7 @@ export function useMemo<TValue>(callback: () => TValue, dependencies?: any[]) {
 
     const hook = cache.hooks[idx]
 
-    if (!isUseMemoHook(hook)) return
+    if (!isUseMemoHook(hook)) throw Error('Cached useMemo hook invalid format')
     if (
       !dependencies ||
       !hook.dependencies ||

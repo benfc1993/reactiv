@@ -4,18 +4,31 @@ export type ReactivNodeBase = {
   children: ReactivNode[]
   ref: HTMLElement | null
   rerender: boolean
+  isComponent: boolean
 }
 
-export type ReactivElementNode = ReactivNodeBase & { isComponent: false }
+export type ReactivElementNode = ReactivNodeBase & {
+  isComponent: false
+  children: ReactivNode[]
+}
+export function isElementNode(
+  node: ReactivNodeBase
+): node is ReactivElementNode {
+  return !!node.isComponent
+}
 export type ReactivComponentNode = ReactivNodeBase & {
   isComponent: true
   hooks: CachedHook[]
   key: string
-  fn: (props: Record<string, any>) => ReactivNode
+  fn: <TProps = any>(props: TProps) => ReactivNode
 }
-
+export function isComponentNode(
+  node: ReactivNodeBase
+): node is ReactivComponentNode {
+  return node.isComponent
+}
 export type ReactivNode = ReactivElementNode | ReactivComponentNode
-export type ReactNode = ReactivNode
+// export type ReactNode = ReactivNode
 
 export type NodeCache = {
   component: (...args: any[]) => ReactivNode
@@ -29,7 +42,7 @@ export type CachedHook =
   | UseEffectHook
   | UseRefHook
   | UseMemoHook
-  | UseContextHook
+  | UseContextHook<any>
 
 type UseStateHook<TValue = any> = { value: TValue }
 export function isUseStateHook(hook: any): hook is UseStateHook {
@@ -74,16 +87,21 @@ export function isUseMemoHook(hook: any): hook is UseMemoHook {
   )
 }
 
-export type UseContextHook = {
-  context: string | null
+export type UseContextHook<TValue> = {
+  value: TValue
+  contextNode: ReactivComponentNode | null
   cleanup?: () => void
 }
 
-export function isUseContextHook(hook: any): hook is UseContextHook {
+export function isUseContextHook<TValue>(
+  hook: any
+): hook is UseContextHook<TValue> {
   const keys = Object.keys(hook)
   return (
-    keys.length === 2 &&
-    (hook?.context === null || typeof hook?.context === 'string') &&
-    (!hook?.cleanup || typeof hook?.cleanup === 'function')
+    (keys.length === 2 && 'value' in hook && 'contextNode' in hook) ||
+    (keys.length === 3 &&
+      'value' in hook &&
+      'contextNode' in hook &&
+      (!hook?.cleanup || typeof hook?.cleanup === 'function'))
   )
 }

@@ -1,4 +1,4 @@
-import type { ReactivNode } from '.'
+import { isComponentNode, isElementNode, type ReactivNode } from '.'
 import { nodePointers, renderState } from './globalState'
 import { isPrimitiveValue } from './utils'
 
@@ -56,7 +56,7 @@ export function render(el: ReactivNode, container: HTMLElement) {
         render(node, domEl)
       })
   }
-  if (el.isComponent || el.tag === 'FRAGMENT') {
+  if (isComponentNode(el) || el.tag === 'FRAGMENT') {
     el.ref = el.children[0].ref
     el.rerender = false
     return
