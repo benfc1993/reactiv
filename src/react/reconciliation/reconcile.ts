@@ -82,15 +82,16 @@ export function reconcile(before: ReactivNode, after: ReactivNode) {
 
       // If no key provided to list items rerender the entire list
       if (afterChild.some((child) => !child?.props?.key)) {
-        beforeChild.rerender = true
+        before.rerender = true
         ;(before.children[i] as unknown as ReactivNode[]) = afterChild.map(
           (child) =>
             ({
               ...child,
+              ref: beforeChild[i].ref ?? null,
               rerender: true,
             }) as ReactivNode
         )
-        beforeChild.map((bC) => {
+        beforeChild.splice(1).map((bC) => {
           unmountComponent(bC)
         })
       } else {
@@ -126,6 +127,10 @@ export function reconcile(before: ReactivNode, after: ReactivNode) {
       )
 
       continue
+    }
+
+    if (beforeChild.tag === 'TEXT') {
+      beforeChild.rerender = beforeChild.rerender || before.rerender
     }
 
     // if no above conditions are met copy props over and reconcile

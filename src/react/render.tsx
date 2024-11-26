@@ -6,11 +6,11 @@ export function render(el: ReactivNode, container: HTMLElement) {
   renderState.renderRunning = true
   if (!el) return
   let domEl: Text | HTMLElement
-  // if (el.rerender) console.log(el.tag, el.rerender, el.ref, container)
 
-  domEl =
-    el.isComponent || el.tag === 'FRAGMENT'
-      ? container
+  domEl = el.isComponent
+    ? container
+    : el.tag === 'FRAGMENT'
+      ? document.createDocumentFragment()
       : !el.rerender && el.ref
         ? el.ref
         : el.tag === 'TEXT'
@@ -30,6 +30,7 @@ export function render(el: ReactivNode, container: HTMLElement) {
       let elProps = el.props ? Object.keys(el.props) : null
       if (elProps && elProps.length > 0 && el.tag !== 'TEXT') {
         elProps.forEach((prop) => {
+          if (prop === 'className') return
           if (!el.isComponent && prop.startsWith('on')) {
             domEl[prop as keyof GlobalEventHandlers] = el.props[prop]
             return
@@ -44,29 +45,37 @@ export function render(el: ReactivNode, container: HTMLElement) {
       el.children
         .flatMap((child) => child)
         .forEach((node) => {
-          render(node, domEl)
+          render(
+            node,
+            !el.rerender && el.tag === 'FRAGMENT' ? container : domEl
+          )
         })
     }
   }
 
-  if (isComponentNode(el) || el.tag === 'FRAGMENT') {
-    if (el.tag === 'FRAGMENT') {
-      console.log('render FRAGMENT:', { ...el })
-      console.log(el.children.flatMap((child) => child)[0].ref)
-    }
+  if (isComponentNode(el)) {
     el.ref = el.children.flatMap((child) => child)[0].ref
-    console.log(el.ref)
     el.rerender = false
     return
   }
 
   if (el.rerender) {
     el.rerender = false
-    if (!el.isComponent && el.ref && container.contains(el.ref)) {
+    if (
+      !(container instanceof DocumentFragment) &&
+      !el.isComponent &&
+      el.ref &&
+      container.contains(el.ref)
+    ) {
       container.replaceChild(domEl, el.ref)
     } else {
       container.appendChild(domEl)
     }
   }
+  if (el.tag === 'FRAGMENT') {
+    el.ref = el.children.flatMap((child) => child)[0]?.ref
+    return
+  }
+
   el.ref = domEl
 }

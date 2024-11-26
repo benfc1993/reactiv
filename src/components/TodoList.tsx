@@ -55,12 +55,13 @@ export function TodoList() {
 
   return (
     <div className='todo-container'>
-      {Array.from({ length: 3 }).map((a, idx) => (
-        <p>{a}</p>
+      {Array.from({ length: value }).map((a, idx) => (
+        <p>testing - {idx}</p>
       ))}
-      <Test>
-        <p>testing</p>
-      </Test>
+      <p>Below</p>
+      {/* <Test> */}
+      {/*   <p>testing</p> */}
+      {/* </Test> */}
       {value}
       <input
         className='input-todo'
