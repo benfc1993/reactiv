@@ -16,7 +16,7 @@ export function reconcile(before: ReactivNode, after: ReactivNode) {
     addToDevTree(
       before.key,
       before.tag,
-      before.key === after.key ? Action.ADDED_COMPONENT : Action.RE_RENDER
+      !before.ref ? Action.ADDED_COMPONENT : Action.RE_RENDER
     )
 
     addedkeys.delete(after.key)

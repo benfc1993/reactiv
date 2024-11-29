@@ -7,6 +7,7 @@ import {
   renderQueue,
   renderState,
   getVDomRoot,
+  reconciliationComplete,
 } from './globalState'
 import { reconcile } from './reconciliation/reconcile'
 import { render } from './render'
@@ -25,6 +26,7 @@ export async function rerender(
     state,
     (<Component {...props} key={state.props.key} />) as unknown as ReactivNode
   )
+  reconciliationComplete()
   globalKey.value = ''
 
   if (renderQueue.length > 0) {

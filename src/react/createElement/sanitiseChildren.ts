@@ -1,15 +1,13 @@
 import { ReactivNode } from '../types'
 import { primitiveValue } from '../utils'
 
-export function sanitiseChildren(
-  children: (ReactivNode | string | number | boolean | null)[]
-): ReactivNode[] {
+export function sanitiseChildren(children: ReactivNode[]): ReactivNode[] {
   return children.map((child) => {
     if (child instanceof Array) {
       return {
         tag: 'FRAGMENT',
         isComponent: false,
-        props: null,
+        props: {},
         children: [child],
         ref: null,
         rerender: true,

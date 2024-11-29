@@ -68,7 +68,7 @@ export function commitTree() {
   const copy = deepClone(nodeTree.next)
   nodeTree.current = copy
   resetNodes(nodeTree.next)
-  console.log(nodeTree)
+  console.log({ ...nodeTree.current })
 }
 
 export function getNodeTree() {

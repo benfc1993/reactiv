@@ -1,14 +1,11 @@
-import { ReactivNode } from '../types'
+import { ReactNode } from 'react'
 
 export const initialContextValues = new Map()
 
 export function createContext<TValue>(initialValue: TValue) {
   initialContextValues.set(Provider, initialValue)
 
-  function Provider(props: {
-    value: TValue
-    children?: ReactivNode[] | ReactivNode
-  }) {
+  function Provider(props: { value: TValue; children?: ReactNode }) {
     return props.children
   }
 

@@ -1,4 +1,10 @@
-import { hookIndex, globalKey, nodePointers, getVDomRoot } from '../globalState'
+import {
+  hookIndex,
+  globalKey,
+  nodePointers,
+  getVDomRoot,
+  renderState,
+} from '../globalState'
 import { isUseContextHook, ReactivComponentNode, ReactivNode } from '../types'
 import { initialContextValues } from './createContext'
 import { scheduleUseContext } from './scheduleUseContext'
@@ -42,7 +48,7 @@ export function useContext<
     if (!cache.hooks[idx]) {
       cache.hooks[idx] = {
         value: initialContextValues.get(context.Provider),
-        contextNode: null,
+        contextNodeKey: null,
       }
     }
     const hook = cache.hooks[idx]
@@ -50,7 +56,7 @@ export function useContext<
     if (!isUseContextHook<TValue>(hook))
       throw Error('Cached useContext hook invalid format')
 
-    if (!hook.contextNode) {
+    if (!hook.contextNodeKey) {
       scheduleUseContext(() => {
         const contextNode = checkChild(getVDomRoot()!, cache, context.Provider)
         if (!contextNode || !('value' in contextNode.props))
@@ -60,11 +66,11 @@ export function useContext<
 
         cache.hooks[idx] = {
           value: contextNode.props.value,
-          contextNode,
+          contextNodeKey: contextNode.key,
         }
       })
     } else {
-      hook.value = hook.contextNode?.props.value
+      hook.value = nodePointers.get(hook.contextNodeKey ?? '')?.props.value
     }
 
     return hook.value

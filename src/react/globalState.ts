@@ -15,6 +15,17 @@ type Scheduler = {
   _running: boolean
 }
 
+const reconciliationSubscribers: Set<() => void> = new Set()
+export function subscribeToReconciliationCompletion(
+  callback: () => void
+): () => void {
+  reconciliationSubscribers.add(callback)
+  return () => reconciliationSubscribers.delete(callback)
+}
+export function reconciliationComplete() {
+  reconciliationSubscribers.forEach((sub) => sub())
+}
+
 export const scheduler: Scheduler = {
   _queue: [],
   _running: false,

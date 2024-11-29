@@ -1,13 +1,13 @@
+import { ReactNode } from 'react'
 import { MyContext } from '..'
-import React, { ReactivNode, useContext } from '../react'
+import React, { useContext } from '../react'
 import { useState } from '../react'
 import { TodoItem } from './TodoItem'
 
 export type Todo = { id: number; text: string; completed: boolean }
-
-const Test = (props: { children: ReactivNode }) => {
-  console.log({ props })
-  return <>{props.children}</>
+function Test(props: { children: ReactNode }) {
+  const { children } = props
+  return <>{children}</>
 }
 
 export function TodoList() {
@@ -55,13 +55,14 @@ export function TodoList() {
 
   return (
     <div className='todo-container'>
-      {Array.from({ length: value }).map((a, idx) => (
-        <p>testing - {idx}</p>
+      {value}
+      {Array.from({ length: value ?? 0 }).map((_, idx) => (
+        <p key={`testing${idx}`}>testing - {idx}</p>
       ))}
       <p>Below</p>
-      {/* <Test> */}
-      {/*   <p>testing</p> */}
-      {/* </Test> */}
+      <Test>
+        <p>testing</p>
+      </Test>
       {value}
       <input
         className='input-todo'
@@ -82,6 +83,7 @@ export function TodoList() {
             />
           )
         })}
+        <p>Blocked</p>
       </div>
     </div>
   )

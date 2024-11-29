@@ -25,7 +25,6 @@ export function TodoItem(props: TodoItemProps) {
         {...(task.completed && { checked: true })}
         onChange={handleChange}
       />
-      {task.text}
       <p className={task.completed ? 'completed' : ''}>{task.text}</p>
       <p onClick={() => setCount((current) => current + 1)}>test-{count}</p>
       <button className='todo-btn' onClick={() => deleteTask(task.id)}>

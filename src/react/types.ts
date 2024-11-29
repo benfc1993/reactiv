@@ -1,3 +1,4 @@
+// TODO: change tag to type, this is then either a string or a component function
 export type ReactivNodeBase = {
   tag: string
   props: Record<string, any>
@@ -9,7 +10,8 @@ export type ReactivNodeBase = {
 
 export type ReactivElementNode = ReactivNodeBase & {
   isComponent: false
-  children: ReactivNode[]
+  children: (ReactivNode | ReactivNode[])[]
+  key?: string
 }
 export function isElementNode(
   node: ReactivNodeBase
@@ -28,7 +30,6 @@ export function isComponentNode(
   return node.isComponent
 }
 export type ReactivNode = ReactivElementNode | ReactivComponentNode
-// export type ReactNode = ReactivNode
 
 export type NodeCache = {
   component: (...args: any[]) => ReactivNode
@@ -89,7 +90,7 @@ export function isUseMemoHook(hook: any): hook is UseMemoHook {
 
 export type UseContextHook<TValue> = {
   value: TValue
-  contextNode: ReactivComponentNode | null
+  contextNodeKey: string | null
   cleanup?: () => void
 }
 
@@ -98,7 +99,7 @@ export function isUseContextHook<TValue>(
 ): hook is UseContextHook<TValue> {
   const keys = Object.keys(hook)
   return (
-    (keys.length === 2 && 'value' in hook && 'contextNode' in hook) ||
+    (keys.length === 2 && 'value' in hook && 'contextNodeKey' in hook) ||
     (keys.length === 3 &&
       'value' in hook &&
       'contextNode' in hook &&

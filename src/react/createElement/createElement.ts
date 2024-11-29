@@ -1,11 +1,5 @@
 import { addToDevTree, commitNode, Action } from '../../devTools'
-import {
-  hookIndex,
-  nodePointers,
-  globalKey,
-  getVDomRoot,
-  setVDomRoot,
-} from '../globalState'
+import { hookIndex, nodePointers, globalKey } from '../globalState'
 import { renderState } from '../globalState'
 import { ReactivElementNode, ReactivNode } from '../types'
 import { createBlankReactivComponentNode } from './createReactivNode'
@@ -24,8 +18,6 @@ const React = {
 
       hookIndex.value = 0
       globalKey.value = key
-
-      // if (getVDomRoot() === null) setVDomRoot(el)
 
       if (!renderState.initialRender) {
         return el
