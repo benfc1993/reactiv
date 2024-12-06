@@ -5,7 +5,7 @@ export function mountComponent(
   component: ReactivComponentNode,
   props: Record<string, any>,
   key: string
-): ReactivNode | ReactivNode[] {
+): ReactivNode {
   globalKey.value = key
   hookIndex.value = 0
 

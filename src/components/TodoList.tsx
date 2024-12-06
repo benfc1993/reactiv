@@ -3,6 +3,7 @@ import { MyContext } from '..'
 import React, { useContext } from '../react'
 import { useState } from '../react'
 import { TodoItem } from './TodoItem'
+import { globalKey, nodePointers } from '../react/globalState'
 
 export type Todo = { id: number; text: string; completed: boolean }
 function Test(props: { children: ReactNode }) {
@@ -27,10 +28,10 @@ export function TodoList() {
   const [text, setText] = useState('')
   const value = useContext(MyContext)
 
-  function addTask(text: string) {
+  function addTask() {
     const newTask = {
       id: Math.random(),
-      text,
+      text: text,
       completed: false,
     }
     setTasks((current) => [...current, newTask])
@@ -63,17 +64,23 @@ export function TodoList() {
       <Test>
         <p>testing</p>
       </Test>
-      {value}
+      {/* {value} */}
       <input
         className='input-todo'
         value={text}
-        onChange={(e) => setText(e.target.value)}
+        onChange={(e) => setText(e.currentTarget.value)}
       />
-      <button className='todo-btn' onClick={() => addTask(text)}>
+      <button className='todo-btn' onClick={() => addTask()}>
         Add
       </button>
       <div className='todo-list'>
         {tasks.map((task) => {
+          // return (
+          //   <div>
+          //     <button onClick={() => deleteTask(task.id)}>delete</button>
+          //     <p>{task.text}</p>
+          //   </div>
+          // )
           return (
             <TodoItem
               key={`${task.text}-${task.id}`}

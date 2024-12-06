@@ -1,5 +1,6 @@
 import React from '.'
 import { commitTree } from '../devTools'
+import { init } from '../devTools/ui'
 import {
   renderState,
   globalKey,
@@ -10,24 +11,29 @@ import {
   scheduler,
   setVDomRoot,
 } from './globalState'
-import { render } from './render'
-import { ReactivNode } from './types'
+import { render } from './render/render'
+import { ReactivComponentNode, ReactivNode } from './types'
 
 export function createApplication(
   root: HTMLElement,
   RootComponent: () => JSX.Element
 ) {
+  init()
   renderState.initialRender = true
   scheduler.add(() => {
     setVDomRoot({
       tag: root.tagName,
       ref: root,
-      children: [<RootComponent />],
-      rerender: false,
+      child: (<RootComponent />) as unknown as ReactivComponentNode,
+      sibling: null,
+      dirty: false,
       isComponent: false,
       props: {},
     })
-    render(getVDomRoot().children[0], root)
+    console.log(getVDomRoot())
+    const vDomRoot = getVDomRoot()
+    if (!vDomRoot?.child) return
+    render(vDomRoot.child, root)
   })
 
   renderState.initialRender = false

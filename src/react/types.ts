@@ -2,15 +2,17 @@
 export type ReactivNodeBase = {
   tag: string
   props: Record<string, any>
-  children: ReactivNode[]
+  child: ReactivNode | null
+  sibling: ReactivNode | null
   ref: HTMLElement | Text | null
-  rerender: boolean
+  dirty: boolean
   isComponent: boolean
+  return: () => ReactivNode | null
+  prev: () => ReactivNode | null
 }
 
 export type ReactivElementNode = ReactivNodeBase & {
   isComponent: false
-  children: (ReactivNode | ReactivNode[])[]
   key?: string
 }
 export function isElementNode(

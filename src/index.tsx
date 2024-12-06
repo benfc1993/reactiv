@@ -12,26 +12,71 @@ function FragmentComponent() {
     </>
   )
 }
-const App = () => {
-  const [state, setState] = useState(1)
-  const obj = { test: { a: 'testing' } }
+
+function Count() {
+  const [count, setCount] = useState(0)
   return (
-    <div className='app'>
-      {Array.from({ length: state }).map((_, idx) => (
-        <p key={`some-${idx}`}>testing{idx}</p>
-      ))}
-      {/* {state < 2 ? null : <p>testing</p>} */}
-      <button onClick={() => setState((current) => current + 1)}>
-        increment context
+    <div>
+      <button onClick={() => setCount((current) => current + 1)}>
+        increment
       </button>
-      {state < 2 ? null : (
-        <MyContext.Provider value={2}>
-          <TodoList />
-        </MyContext.Provider>
-      )}
-      <MyContext.Provider value={state}>
+      <p>{count}</p>
+      {/* {count > 5 && <Count />} */}
+      {Array.from({ length: count }).map((_, idx) => (
+        <p>item {idx}</p>
+      ))}
+    </div>
+  )
+}
+function Test() {
+  const [data, setData] = useState([
+    { id: 'ab2', value: 1 },
+    { id: 'xy7', value: 7 },
+  ])
+  return (
+    <div>
+      <button
+        onClick={() =>
+          setData((current) => [
+            ...current,
+            { id: 'rs4', value: Math.round(Math.random() * 100) },
+          ])
+        }
+      >
+        add
+      </button>
+      <p>before</p>
+      {data
+        .sort((a, b) => a.value - b.value)
+        .map((d) => (
+          <p>{d.value}</p>
+        ))}
+      <p>after</p>
+    </div>
+  )
+}
+
+function Wrapper() {
+  const [value, setValue] = useState(1)
+
+  return (
+    <>
+      <button onClick={() => setValue((current) => current + 1)}>
+        increment
+      </button>
+      <Test />
+      <Count />
+      <MyContext.Provider value={value}>
         <TodoList />
       </MyContext.Provider>
+    </>
+  )
+}
+
+export const App = () => {
+  return (
+    <div draggable>
+      <Wrapper />
     </div>
   )
 }

@@ -11,7 +11,8 @@ export function createBlankReactivComponentNode(
     tag: tag.name,
     fn: tag,
     isComponent: true,
-    children: [],
+    child: null,
+    sibling: null,
     props: sanitiseComponentProps({
       children,
       ...props,
@@ -19,6 +20,8 @@ export function createBlankReactivComponentNode(
     hooks: [],
     key,
     ref: null,
-    rerender: true,
+    dirty: true,
+    return: () => null,
+    prev: () => null,
   }
 }

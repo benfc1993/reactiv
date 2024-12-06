@@ -9,28 +9,6 @@ import { isUseContextHook, ReactivComponentNode, ReactivNode } from '../types'
 import { initialContextValues } from './createContext'
 import { scheduleUseContext } from './scheduleUseContext'
 
-function checkChild(
-  node: ReactivNode,
-  target: ReactivNode,
-  context: (props: any) => any,
-  contextNode: ReactivComponentNode | null = null
-) {
-  if (node.isComponent && node.fn === context) {
-    contextNode = node
-  }
-
-  if (node === target) {
-    return contextNode
-  }
-
-  for (let i = 0; i < node.children?.length; i++) {
-    const child = node.children[i]
-    const res = checkChild(child, target, context, contextNode)
-    if (res) contextNode = res
-  }
-  return contextNode
-}
-
 type Provider = { Provider: (...props: any[]) => any }
 
 export function useContext<
@@ -58,7 +36,12 @@ export function useContext<
 
     if (!hook.contextNodeKey) {
       scheduleUseContext(() => {
-        const contextNode = checkChild(getVDomRoot()!, cache, context.Provider)
+        let contextNode = cache.return()
+        while (contextNode) {
+          if (contextNode === contextNode) break
+          contextNode = contextNode.return()
+        }
+        console.log(contextNode)
         if (!contextNode || !('value' in contextNode.props))
           throw new Error(
             'Component passed to useContext is not a context Provider'

@@ -80,11 +80,10 @@ function updateVirtualDomView(isVisible: boolean = true) {
   jsonViewerContainer.appendChild(jsonViewer)
 }
 
-function init() {
+export function init() {
   const root = document.getElementById('dev-tools')!
   root.appendChild(UI.devToggle)
   root.appendChild(UI.stepButton)
   root.appendChild(UI.notification)
   // root.appendChild(UI.vDomButton)
 }
-init()

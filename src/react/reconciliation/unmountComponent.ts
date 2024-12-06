@@ -5,9 +5,10 @@ import { ReactivNode } from '../types'
 export async function unmountComponent(node: ReactivNode) {
   if (node.isComponent) {
     const cache = nodePointers.get(node.key)
-    await addAction(cache!, Action.REMOVED_COMPONENT, 'Component removed', true)
+    addAction(cache!, Action.REMOVED_COMPONENT, 'Component removed', true)
   }
 
+  console.log('delete html node')
   node.ref?.parentNode?.removeChild(node.ref)
   if (!node.isComponent) return
   addToDevTree(node.key, node.tag, Action.REMOVED_COMPONENT)

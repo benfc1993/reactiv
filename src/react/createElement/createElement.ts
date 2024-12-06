@@ -1,6 +1,7 @@
 import { addToDevTree, commitNode, Action } from '../../devTools'
 import { hookIndex, nodePointers, globalKey } from '../globalState'
 import { renderState } from '../globalState'
+import { itterateChildren } from '../render/createDomElement'
 import { ReactivElementNode, ReactivNode } from '../types'
 import { createBlankReactivComponentNode } from './createReactivNode'
 import { sanitiseChildren } from './sanitiseChildren'
@@ -28,8 +29,8 @@ const React = {
       nodePointers.set(key, el)
 
       const componentResponse = tag(el.props)
-
-      el.children = sanitiseChildren(
+      el.child = sanitiseChildren(
+        el,
         Array.isArray(componentResponse)
           ? (componentResponse as Array<ReactivNode>)
           : [componentResponse]
@@ -37,16 +38,25 @@ const React = {
 
       commitNode()
 
+      itterateChildren(el, (node) => (node.return = () => el))
+
       return el
     }
     const el: ReactivElementNode = {
       tag: tag ?? 'FRAGMENT',
       isComponent: false,
       props: sanitiseElementProps(props),
-      children: sanitiseChildren(children),
+      child: null,
+      sibling: null,
       ref: null,
-      rerender: true,
+      dirty: true,
+      return: () => null,
+      prev: () => null,
     }
+
+    el.child = sanitiseChildren(el, children)
+
+    itterateChildren(el, (node) => (node.return = () => el))
 
     return el
   },

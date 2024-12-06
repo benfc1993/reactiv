@@ -1,4 +1,4 @@
-export * from './render'
+export * from './render/render'
 export * from './hooks/useState'
 export * from './hooks/useEffect'
 export * from './hooks/useMemo'

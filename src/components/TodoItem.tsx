@@ -13,6 +13,7 @@ export function TodoItem(props: TodoItemProps) {
   function handleChange() {
     toggleCompleted(task.id)
   }
+
   useEffect(() => {
     if (task.completed) setCount(100)
   }, [task.completed])
