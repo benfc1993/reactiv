@@ -1,13 +1,7 @@
-import {
-  hookIndex,
-  globalKey,
-  nodePointers,
-  getVDomRoot,
-  renderState,
-} from '../globalState'
-import { isUseContextHook, ReactivComponentNode, ReactivNode } from '../types'
+import { sanitiseChildren } from '../createElement/sanitiseChildren'
+import { hookIndex, globalKey, nodePointers, suspended } from '../globalState'
+import { isComponentNode, isUseContextHook } from '../types'
 import { initialContextValues } from './createContext'
-import { scheduleUseContext } from './scheduleUseContext'
 
 type Provider = { Provider: (...props: any[]) => any }
 
@@ -35,13 +29,16 @@ export function useContext<
       throw Error('Cached useContext hook invalid format')
 
     if (!hook.contextNodeKey) {
-      scheduleUseContext(() => {
+      suspended.add(() => {
         let contextNode = cache.return()
         while (contextNode) {
-          if (contextNode === contextNode) break
+          if (
+            isComponentNode(contextNode) &&
+            contextNode.fn === context.Provider
+          )
+            break
           contextNode = contextNode.return()
         }
-        console.log(contextNode)
         if (!contextNode || !('value' in contextNode.props))
           throw new Error(
             'Component passed to useContext is not a context Provider'
@@ -51,6 +48,10 @@ export function useContext<
           value: contextNode.props.value,
           contextNodeKey: contextNode.key,
         }
+        globalKey.value = internalKey
+        hookIndex.value = 0
+        const res = cache.fn(cache.props)
+        cache.child = sanitiseChildren(cache, Array.isArray(res) ? res : [res])
       })
     } else {
       hook.value = nodePointers.get(hook.contextNodeKey ?? '')?.props.value

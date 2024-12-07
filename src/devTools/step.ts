@@ -41,7 +41,7 @@ export async function addAction(
   message: string,
   show: boolean = false
 ) {
-  if (!pause.isEnabled) return
+  if (!pause.isEnabled) return Promise.resolve()
   let resolve: () => void
   const promise = new Promise<void>((res) => {
     resolve = res

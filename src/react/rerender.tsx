@@ -9,8 +9,7 @@ import {
   getVDomRoot,
   reconciliationComplete,
 } from './globalState'
-// import { reconcile } from './reconciliation/reconcile'
-import { reconcile, startReconcile } from './reconciliation/newReconcile'
+import { startReconcile } from './reconciliation/reconcile'
 import { render } from './render/render'
 import { ReactivNode } from './types'
 

@@ -42,6 +42,7 @@ const React = {
 
       return el
     }
+
     const el: ReactivElementNode = {
       tag: tag ?? 'FRAGMENT',
       isComponent: false,

@@ -1,6 +1,6 @@
 import { globalKey, nodePointers } from '../globalState'
 import { ReactivComponentNode, ReactivElementNode, ReactivNode } from '../types'
-import { startReconcile } from './newReconcile'
+import { startReconcile } from './reconcile'
 
 function blankNode(partial?: Partial<ReactivElementNode>): ReactivNode {
   return {

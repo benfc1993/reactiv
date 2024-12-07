@@ -21,12 +21,18 @@ export function reconcile(
   if (before.isComponent && after.isComponent) {
     globalKey.value = before.key
     hookIndex.value = 0
+
     after.key = before.key
     after.hooks = before.hooks
     after.ref = before.ref
-    after.child = sanitiseChildren(after, [
-      after.fn({ ...after.props, key: before.key }),
-    ])
+    const componentResponse = after.fn({ ...after.props, key: before.key })
+
+    after.child = sanitiseChildren(
+      after,
+      Array.isArray(componentResponse)
+        ? (componentResponse as Array<ReactivNode>)
+        : [componentResponse]
+    )
     itterateChildren(after, (node) => (node.return = () => after))
     if (before.sibling && !after.sibling && initialiser)
       after.sibling = before.sibling

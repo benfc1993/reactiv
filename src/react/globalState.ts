@@ -48,6 +48,8 @@ export const scheduler: Scheduler = {
   },
 }
 
+export const suspended = new Set<() => void>()
+
 export function setVDomRoot(rootNode: ReactivNode) {
   vDom.root = rootNode
 }

@@ -1,9 +1,7 @@
 import { ReactNode } from 'react'
-import { MyContext } from '..'
-import React, { useContext } from '../react'
+import React from '../react'
 import { useState } from '../react'
 import { TodoItem } from './TodoItem'
-import { globalKey, nodePointers } from '../react/globalState'
 
 export type Todo = { id: number; text: string; completed: boolean }
 function Test(props: { children: ReactNode }) {
@@ -26,7 +24,6 @@ export function TodoList() {
   ])
 
   const [text, setText] = useState('')
-  const value = useContext(MyContext)
 
   function addTask() {
     const newTask = {
@@ -52,19 +49,12 @@ export function TodoList() {
     )
   }
 
-  /* TODO: Fix array rerender with no parent tag */
-
   return (
     <div className='todo-container'>
-      {value}
-      {Array.from({ length: value ?? 0 }).map((_, idx) => (
-        <p key={`testing${idx}`}>testing - {idx}</p>
-      ))}
       <p>Below</p>
       <Test>
         <p>testing</p>
       </Test>
-      {/* {value} */}
       <input
         className='input-todo'
         value={text}
@@ -75,12 +65,6 @@ export function TodoList() {
       </button>
       <div className='todo-list'>
         {tasks.map((task) => {
-          // return (
-          //   <div>
-          //     <button onClick={() => deleteTask(task.id)}>delete</button>
-          //     <p>{task.text}</p>
-          //   </div>
-          // )
           return (
             <TodoItem
               key={`${task.text}-${task.id}`}

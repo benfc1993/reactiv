@@ -10,9 +10,10 @@ import {
   getVDomRoot,
   scheduler,
   setVDomRoot,
+  suspended,
 } from './globalState'
 import { render } from './render/render'
-import { ReactivComponentNode, ReactivNode } from './types'
+import { ReactivComponentNode } from './types'
 
 export function createApplication(
   root: HTMLElement,
@@ -29,10 +30,13 @@ export function createApplication(
       dirty: false,
       isComponent: false,
       props: {},
+      return: () => null,
+      prev: () => null,
     })
     console.log(getVDomRoot())
     const vDomRoot = getVDomRoot()
     if (!vDomRoot?.child) return
+    suspended.forEach((callback) => callback())
     render(vDomRoot.child, root)
   })
 
