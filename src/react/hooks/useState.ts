@@ -1,20 +1,13 @@
-import { Action, addAction } from '../../devTools'
-import {
-  hookIndex,
-  globalKey,
-  nodePointers,
-  addToRenderQueue,
-  scheduler,
-} from '../globalState'
+import { logStateAction } from '../../devTools/actionLogging'
+import { nodePointers, scheduler } from '../globalState'
 import { rerender } from '../rerender'
 import { isUseStateHook } from '../types'
+import { initialiseHook } from './initialiseHook'
 
 export function useState<TState>(
   initialState: TState | (() => TState)
 ): [TState, (next: TState | ((current: TState) => TState)) => void] {
-  const idx = hookIndex.value
-  const internalKey = globalKey.value
-  hookIndex.value += 1
+  const { idx, internalKey } = initialiseHook()
 
   return (() => {
     const cache = nodePointers.get(internalKey)
@@ -35,12 +28,10 @@ export function useState<TState>(
       const prevValue = hook.value
       hook.value =
         typeof next === 'function' ? (next as Function)(hook.value) : next
-      await addAction(
-        cache,
-        Action.STATE_CHANGE,
-        `State updated from ${prevValue instanceof Object ? JSON.stringify(prevValue) : prevValue} to ${prevValue instanceof Object ? JSON.stringify(hook.value) : hook.value}`,
-        true
-      )
+
+      // DevTools
+      await logStateAction(cache, prevValue, hook.value)
+
       scheduler.add(() => {
         rerender(cache.fn, {
           ...cache.props,
@@ -48,6 +39,7 @@ export function useState<TState>(
         })
       })
     }
+
     if (!isUseStateHook(hook))
       throw Error('Cached useState hook invalid format')
 

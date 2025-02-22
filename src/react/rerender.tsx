@@ -40,6 +40,7 @@ export async function rerender(
     console.log('next in render queue')
     return renderQueue.shift()?.()
   }
+
   renderState.renderRunning = false
   showAllMessages()
   console.log(getVDomRoot())

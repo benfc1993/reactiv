@@ -1,11 +1,10 @@
 import { addAction, Action } from '../../devTools'
-import { hookIndex, globalKey, nodePointers } from '../globalState'
+import { nodePointers } from '../globalState'
 import { isUseMemoHook } from '../types'
+import { initialiseHook } from './initialiseHook'
 
 export function useMemo<TValue>(callback: () => TValue, dependencies?: any[]) {
-  const idx = hookIndex.value
-  const internalKey = globalKey.value
-  hookIndex.value += 1
+  const { idx, internalKey } = initialiseHook()
 
   return (() => {
     const cache = nodePointers.get(internalKey)

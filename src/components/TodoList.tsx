@@ -1,13 +1,8 @@
-import { ReactNode } from 'react'
 import React from '../react'
 import { useState } from '../react'
 import { TodoItem } from './TodoItem'
 
 export type Todo = { id: number; text: string; completed: boolean }
-function Test(props: { children: ReactNode }) {
-  const { children } = props
-  return <>{children}</>
-}
 
 export function TodoList() {
   const [tasks, setTasks] = useState<Todo[]>([
@@ -51,10 +46,7 @@ export function TodoList() {
 
   return (
     <div className='todo-container'>
-      <p>Below</p>
-      <Test>
-        <p>testing</p>
-      </Test>
+      <h3>To-do list</h3>
       <input
         className='input-todo'
         value={text}
@@ -74,7 +66,6 @@ export function TodoList() {
             />
           )
         })}
-        <p>Blocked</p>
       </div>
     </div>
   )

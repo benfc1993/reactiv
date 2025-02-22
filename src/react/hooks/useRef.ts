@@ -1,10 +1,9 @@
-import { hookIndex, globalKey, nodePointers } from '../globalState'
+import { nodePointers } from '../globalState'
 import { isUseRefHook } from '../types'
+import { initialiseHook } from './initialiseHook'
 
 export function useRef<TValue>(initialValue: TValue): { current: TValue } {
-  const idx = hookIndex.value
-  const internalKey = globalKey.value
-  hookIndex.value += 1
+  const { idx, internalKey } = initialiseHook()
 
   return (() => {
     const cache = nodePointers.get(internalKey)

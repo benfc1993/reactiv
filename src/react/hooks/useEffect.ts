@@ -1,16 +1,15 @@
-import { Action, addAction } from '../../devTools'
-import { hookIndex, globalKey, nodePointers } from '../globalState'
+import { logEffectAction } from '../../devTools/actionLogging'
+import { nodePointers } from '../globalState'
 import { isUseEffectHook, UseEffectHook } from '../types'
+import { initialiseHook } from './initialiseHook'
 
 export function useEffect(
   callback: () => void | (() => void),
   dependencies?: any[]
 ) {
-  const idx = hookIndex.value
-  const internalKey = globalKey.value
-  hookIndex.value += 1
+  const { idx, internalKey } = initialiseHook()
 
-  return (() => {
+  return (async () => {
     const cache = nodePointers.get(internalKey)
 
     if (!cache) throw new Error('no cache found for useEffect')
@@ -28,11 +27,9 @@ export function useEffect(
       !hook.dependencies ||
       hook.dependencies.some((dep, i) => dep !== dependencies[i])
     ) {
-      void addAction(
-        cache,
-        Action.DEPENDENCY_CHANGE,
-        'useEffect dependencies changed, running callback'
-      )
+      // DevTools
+      void logEffectAction(cache)
+
       hook.dependencies = dependencies
       hook.cleanup?.()
       const cleanup = callback()
@@ -40,10 +37,5 @@ export function useEffect(
 
       return
     }
-    void addAction(
-      cache,
-      Action.DEPENDENCY_CHANGE,
-      'useEffect dependencies NOT changed'
-    )
   })()
 }
